@@ -9,7 +9,17 @@ const HeroSection = () => {
   const tr = useTr();
 
   return (
-    <section className="relative min-h-[90vh] flex items-center bg-gradient-hero overflow-hidden pt-16">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden pt-16">
+      {/* Background image */}
+      <img
+        src="/hero-bg-exercise.jpg"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+        width={1920}
+        height={1080}
+      />
+      {/* Light overlay to keep text readable */}
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px]" />
       {/* Decorative blobs */}
       <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float" />
       <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
