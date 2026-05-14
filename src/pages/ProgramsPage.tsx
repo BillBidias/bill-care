@@ -125,6 +125,7 @@ const ProgramsPage = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
+                onClick={() => setOpenProgram(program)}
                 className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-all group cursor-pointer"
               >
                 <div className="h-40 bg-gradient-to-br from-primary/10 to-secondary flex items-center justify-center text-5xl group-hover:scale-105 transition-transform">
@@ -149,7 +150,11 @@ const ProgramsPage = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-heading font-bold text-primary">{program.price}€</span>
-                    <Button size="sm" className="rounded-full text-xs font-body">
+                    <Button
+                      size="sm"
+                      className="rounded-full text-xs font-body"
+                      onClick={(e) => { e.stopPropagation(); setOpenProgram(program); }}
+                    >
                       {tr({ fr: "Voir", en: "View", de: "Ansehen" })}
                     </Button>
                   </div>
