@@ -8,19 +8,19 @@ import { useI18n, useTr } from "@/lib/i18n";
 import { Search, Filter, Clock, Dumbbell, BarChart3, FileSearch } from "lucide-react";
 
 const mockPrograms = [
-  // Regroupement par régions corporelles, inspiré du CIM-10 (chap. XIII M00-M99 + autres chapitres pertinents)
-  { id: 1, cat: 0, region: { fr: "Rachis cervical", en: "Cervical spine", de: "Halswirbelsäule" }, title: { fr: "Cervicalgies & tensions cervicales", en: "Neck pain & cervical tension", de: "Nackenschmerzen & HWS-Verspannungen" }, price: 44, duration: "6 sem.", level: "Débutant", image: "🦴", icd10: "M54.2" },
-  { id: 2, cat: 0, region: { fr: "Rachis dorsal", en: "Thoracic spine", de: "Brustwirbelsäule" }, title: { fr: "Dorsalgies & posture thoracique", en: "Mid-back pain & thoracic posture", de: "BWS-Schmerzen & Haltung" }, price: 44, duration: "6 sem.", level: "Débutant", image: "🧘", icd10: "M54.6" },
-  { id: 3, cat: 0, region: { fr: "Rachis lombaire", en: "Lumbar spine", de: "Lendenwirbelsäule" }, title: { fr: "Lombalgie chronique & sciatique", en: "Chronic low back pain & sciatica", de: "Chron. Rückenschmerz & Ischias" }, price: 59, duration: "8 sem.", level: "Intermédiaire", image: "🦴", icd10: "M54.5" },
-  { id: 4, cat: 1, region: { fr: "Épaule", en: "Shoulder", de: "Schulter" }, title: { fr: "Coiffe des rotateurs & capsulite", en: "Rotator cuff & frozen shoulder", de: "Rotatorenmanschette & Schultersteife" }, price: 54, duration: "6 sem.", level: "Débutant", image: "💪", icd10: "M75.1" },
-  { id: 5, cat: 1, region: { fr: "Coude & poignet", en: "Elbow & wrist", de: "Ellbogen & Handgelenk" }, title: { fr: "Épicondylite & tendinopathies", en: "Tennis elbow & tendinopathies", de: "Epicondylitis & Tendinopathien" }, price: 44, duration: "5 sem.", level: "Débutant", image: "💪", icd10: "M77.1" },
-  { id: 6, cat: 1, region: { fr: "Main & doigts", en: "Hand & fingers", de: "Hand & Finger" }, title: { fr: "Canal carpien & arthrose digitale", en: "Carpal tunnel & finger arthritis", de: "Karpaltunnel & Fingerarthrose" }, price: 39, duration: "4 sem.", level: "Débutant", image: "✋", icd10: "G56.0" },
-  { id: 7, cat: 3, region: { fr: "Hanche", en: "Hip", de: "Hüfte" }, title: { fr: "Coxarthrose & prothèse de hanche", en: "Hip osteoarthritis & THR", de: "Hüftarthrose & Hüft-TEP" }, price: 54, duration: "8 sem.", level: "Débutant", image: "🦵", icd10: "M16.9" },
-  { id: 8, cat: 2, region: { fr: "Genou", en: "Knee", de: "Knie" }, title: { fr: "LCA, ménisque & gonarthrose", en: "ACL, meniscus & knee OA", de: "Kreuzband, Meniskus & Gonarthrose" }, price: 69, duration: "12 sem.", level: "Avancé", image: "🦵", icd10: "M17.9" },
-  { id: 9, cat: 4, region: { fr: "Cheville & pied", en: "Ankle & foot", de: "Sprunggelenk & Fuß" }, title: { fr: "Entorse cheville & fasciite plantaire", en: "Ankle sprain & plantar fasciitis", de: "Knöchelverstauchung & Plantarfasziitis" }, price: 49, duration: "6 sem.", level: "Intermédiaire", image: "🦶", icd10: "S93.4" },
-  { id: 10, cat: 5, region: { fr: "Système nerveux", en: "Nervous system", de: "Nervensystem" }, title: { fr: "Neuro-rééducation post-AVC", en: "Post-stroke neuro rehab", de: "Neuroreha nach Schlaganfall" }, price: 79, duration: "12 sem.", level: "Avancé", image: "🧠", icd10: "I69.4" },
-  { id: 11, cat: 6, region: { fr: "Système respiratoire", en: "Respiratory system", de: "Atmungssystem" }, title: { fr: "Réhabilitation respiratoire (BPCO)", en: "Pulmonary rehab (COPD)", de: "Atemtherapie (COPD)" }, price: 49, duration: "8 sem.", level: "Débutant", image: "🫁", icd10: "J44.9" },
-  { id: 12, cat: 8, region: { fr: "Périnée & post-partum", en: "Pelvic floor & postpartum", de: "Beckenboden & Wochenbett" }, title: { fr: "Périnée, incontinence & post-partum", en: "Pelvic floor, incontinence & postpartum", de: "Beckenboden, Inkontinenz & Postpartum" }, price: 54, duration: "8 sem.", level: "Débutant", image: "👶", icd10: "O90.8" },
+  // 12 régions corporelles. icd10 = liste de codes/plages CIM-10 pertinents (recherche par code possible).
+  { id: 1, cat: 0, region: { fr: "Tête & cou", en: "Head & neck", de: "Kopf & Hals" }, title: { fr: "Cervicalgies, nuque, ATM, vertiges positionnels", en: "Neck pain, TMJ, positional vertigo", de: "Nackenschmerzen, KG, Lagerungsschwindel" }, price: 44, duration: "6 sem.", level: "Débutant", image: "🧠", icd10: "M50–M54 · G54 · M53" },
+  { id: 2, cat: 0, region: { fr: "Colonne vertébrale", en: "Spine", de: "Wirbelsäule" }, title: { fr: "Lombalgies, hernies, scoliose, coccyx, dorsalgies", en: "Low back pain, hernias, scoliosis, coccyx", de: "Rückenschmerz, Bandscheiben, Skoliose" }, price: 59, duration: "8 sem.", level: "Intermédiaire", image: "🦴", icd10: "M40–M54 · M51" },
+  { id: 3, cat: 1, region: { fr: "Épaule & bras", en: "Shoulder & arm", de: "Schulter & Arm" }, title: { fr: "Coiffe, capsulite, instabilité, biceps, post-op", en: "Rotator cuff, frozen shoulder, instability, post-op", de: "Rotatorenmanschette, Schultersteife, post-OP" }, price: 54, duration: "6 sem.", level: "Débutant", image: "💪", icd10: "M75 · M77 · G56" },
+  { id: 4, cat: 1, region: { fr: "Coude & avant-bras", en: "Elbow & forearm", de: "Ellbogen & Unterarm" }, title: { fr: "Épicondylites, tendinopathies de l'avant-bras", en: "Epicondylitis, forearm tendinopathies", de: "Epicondylitis, Unterarm-Tendinopathien" }, price: 44, duration: "5 sem.", level: "Débutant", image: "💪", icd10: "M77.0 · M77.1 · M70" },
+  { id: 5, cat: 1, region: { fr: "Poignet & main", en: "Wrist & hand", de: "Handgelenk & Hand" }, title: { fr: "Canal carpien, arthrose digitale, mobilité", en: "Carpal tunnel, finger OA, mobility", de: "Karpaltunnel, Fingerarthrose, Mobilität" }, price: 39, duration: "4 sem.", level: "Débutant", image: "✋", icd10: "G56 · M15 · M70 · M77.2" },
+  { id: 6, cat: 3, region: { fr: "Hanche & bassin", en: "Hip & pelvis", de: "Hüfte & Becken" }, title: { fr: "Coxarthrose, FAI, prothèse, piriforme, pubalgies", en: "Hip OA, FAI, THR, piriformis, groin pain", de: "Hüftarthrose, FAI, Hüft-TEP, Piriformis" }, price: 54, duration: "8 sem.", level: "Débutant", image: "🦵", icd10: "M16 · M70 · M76 · Z96" },
+  { id: 7, cat: 2, region: { fr: "Genou & cuisse", en: "Knee & thigh", de: "Knie & Oberschenkel" }, title: { fr: "Gonarthrose, rotule, LCA, ménisque, PTG, bandelette IT", en: "Knee OA, patella, ACL, meniscus, TKR, IT band", de: "Gonarthrose, Patella, Kreuzband, Meniskus, KTEP" }, price: 69, duration: "12 sem.", level: "Avancé", image: "🦵", icd10: "M17 · M22 · M23 · M71 · M76" },
+  { id: 8, cat: 4, region: { fr: "Cheville & pied", en: "Ankle & foot", de: "Sprunggelenk & Fuß" }, title: { fr: "Entorse, Achille, fasciite, hallux valgus, Morton", en: "Sprain, Achilles, fasciitis, hallux valgus, Morton", de: "Verstauchung, Achilles, Fasziitis, Hallux, Morton" }, price: 49, duration: "6 sem.", level: "Intermédiaire", image: "🦶", icd10: "M72 · M76 · M77 · G57.6 · M20" },
+  { id: 9, cat: 0, region: { fr: "Posture & ergonomie", en: "Posture & ergonomics", de: "Haltung & Ergonomie" }, title: { fr: "Hypercyphose, lordose, télétravail, conducteurs", en: "Hyperkyphosis, lordosis, remote work, drivers", de: "Hyperkyphose, Lordose, Homeoffice, Fahrer" }, price: 39, duration: "4 sem.", level: "Débutant", image: "🧘", icd10: "M40 · M41 · Z57.5" },
+  { id: 10, cat: 7, region: { fr: "Renforcement global", en: "Global strengthening", de: "Ganzkörperkräftigung" }, title: { fr: "Core, senior, reconditionnement, plancher pelvien", en: "Core, senior, reconditioning, pelvic floor", de: "Core, Senior, Rekonditionierung, Beckenboden" }, price: 54, duration: "8 sem.", level: "Intermédiaire", image: "🏋️", icd10: "M62 · R26 · N39 · Z72 · Z73" },
+  { id: 11, cat: 7, region: { fr: "Mobilité & souplesse", en: "Mobility & flexibility", de: "Mobilität & Beweglichkeit" }, title: { fr: "Stretching, yoga thérapeutique, foam roller, masters", en: "Stretching, therapeutic yoga, foam roller, masters", de: "Stretching, Yogatherapie, Faszienrolle, Masters" }, price: 39, duration: "5 sem.", level: "Débutant", image: "🧘", icd10: "M62 · M79 · Z72" },
+  { id: 12, cat: 8, region: { fr: "Populations spéciales", en: "Special populations", de: "Besondere Gruppen" }, title: { fr: "Grossesse, fibromyalgie, SEP, Parkinson, AVC, ado", en: "Pregnancy, fibromyalgia, MS, Parkinson, stroke, teens", de: "Schwangerschaft, Fibromyalgie, MS, Parkinson, Schlaganfall" }, price: 64, duration: "10 sem.", level: "Avancé", image: "👶", icd10: "G20 · G35 · M79.70 · O26 · N99 · F45" },
 ];
 
 const ProgramsPage = () => {
@@ -31,7 +31,11 @@ const ProgramsPage = () => {
 
   const filtered = mockPrograms.filter((p) => {
     if (selectedCat !== null && p.cat !== selectedCat) return false;
-    if (search && !tr(p.title).toLowerCase().includes(search.toLowerCase())) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const hay = `${tr(p.title)} ${tr(p.region)} ${p.icd10}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
     return true;
   });
 
@@ -97,12 +101,12 @@ const ProgramsPage = () => {
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {program.duration}</span>
                     <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {program.level}</span>
                     <a
-                      href={`https://icd.who.int/browse10/2019/en#/${program.icd10}`}
+                      href={`https://icd.who.int/browse10/2019/en#/search?q=${encodeURIComponent(program.icd10)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       title={`ICD-10: ${program.icd10}`}
-                      className="flex items-center gap-1 hover:text-primary transition-colors"
+                      className="flex items-center gap-1 hover:text-primary transition-colors line-clamp-1"
                     >
                       <FileSearch className="w-3 h-3" /> {program.icd10}
                     </a>
