@@ -5,21 +5,21 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18n, useTr } from "@/lib/i18n";
-import { Search, Filter, Clock, Dumbbell, BarChart3 } from "lucide-react";
+import { Search, Filter, Clock, Dumbbell, BarChart3, FileSearch } from "lucide-react";
 
 const mockPrograms = [
-  { id: 1, cat: 0, title: { fr: "Soulagement lombalgie chronique", en: "Chronic low back pain relief", de: "Chronische Rückenschmerzen Linderung" }, price: 49, duration: "6 sem.", level: "Débutant", image: "🦴" },
-  { id: 2, cat: 0, title: { fr: "Hernie discale - Phase 1", en: "Disc herniation - Phase 1", de: "Bandscheibenvorfall - Phase 1" }, price: 59, duration: "8 sem.", level: "Intermédiaire", image: "🦴" },
-  { id: 3, cat: 1, title: { fr: "Rééducation coiffe des rotateurs", en: "Rotator cuff rehabilitation", de: "Rotatorenmanschette Rehabilitation" }, price: 54, duration: "6 sem.", level: "Débutant", image: "💪" },
-  { id: 4, cat: 2, title: { fr: "Post-opératoire LCA", en: "Post-ACL surgery", de: "Nach Kreuzband-OP" }, price: 69, duration: "12 sem.", level: "Avancé", image: "🦵" },
-  { id: 5, cat: 3, title: { fr: "Arthrose de hanche", en: "Hip osteoarthritis", de: "Hüftarthrose" }, price: 49, duration: "8 sem.", level: "Débutant", image: "🫀" },
-  { id: 6, cat: 5, title: { fr: "Correction posturale bureau", en: "Office posture correction", de: "Büro-Haltungskorrektur" }, price: 39, duration: "4 sem.", level: "Débutant", image: "🧘" },
-  { id: 7, cat: 6, title: { fr: "Renforcement core complet", en: "Complete core strengthening", de: "Komplette Rumpfkräftigung" }, price: 44, duration: "6 sem.", level: "Intermédiaire", image: "🏋️" },
-  { id: 8, cat: 7, title: { fr: "Mobilité articulaire globale", en: "Full body joint mobility", de: "Globale Gelenkmobilität" }, price: 39, duration: "4 sem.", level: "Débutant", image: "🤸" },
-  { id: 9, cat: 4, title: { fr: "Entorse cheville - Retour au sport", en: "Ankle sprain - Return to sport", de: "Knöchelverstauchung - Sportrückkehr" }, price: 49, duration: "6 sem.", level: "Intermédiaire", image: "🦶" },
-  { id: 10, cat: 8, title: { fr: "Rééducation post-partum", en: "Postpartum rehabilitation", de: "Postpartale Rehabilitation" }, price: 54, duration: "8 sem.", level: "Débutant", image: "👶" },
-  { id: 11, cat: 9, title: { fr: "Bundle dos complet", en: "Complete back bundle", de: "Komplettes Rücken-Bundle" }, price: 99, duration: "16 sem.", level: "Tous", image: "🎯" },
-  { id: 12, cat: 0, title: { fr: "Sciatique - Programme progressif", en: "Sciatica - Progressive program", de: "Ischias - Progressives Programm" }, price: 54, duration: "8 sem.", level: "Débutant", image: "🦴" },
+  { id: 1, cat: 0, title: { fr: "Soulagement lombalgie chronique", en: "Chronic low back pain relief", de: "Chronische Rückenschmerzen Linderung" }, price: 49, duration: "6 sem.", level: "Débutant", image: "🦴", icd10: "M54.5" },
+  { id: 2, cat: 0, title: { fr: "Hernie discale - Phase 1", en: "Disc herniation - Phase 1", de: "Bandscheibenvorfall - Phase 1" }, price: 59, duration: "8 sem.", level: "Intermédiaire", image: "🦴", icd10: "M51.1" },
+  { id: 3, cat: 1, title: { fr: "Rééducation coiffe des rotateurs", en: "Rotator cuff rehabilitation", de: "Rotatorenmanschette Rehabilitation" }, price: 54, duration: "6 sem.", level: "Débutant", image: "💪", icd10: "M75.1" },
+  { id: 4, cat: 2, title: { fr: "Post-opératoire LCA", en: "Post-ACL surgery", de: "Nach Kreuzband-OP" }, price: 69, duration: "12 sem.", level: "Avancé", image: "🦵", icd10: "S83.5" },
+  { id: 5, cat: 3, title: { fr: "Arthrose de hanche", en: "Hip osteoarthritis", de: "Hüftarthrose" }, price: 49, duration: "8 sem.", level: "Débutant", image: "🫀", icd10: "M16.9" },
+  { id: 6, cat: 5, title: { fr: "Correction posturale bureau", en: "Office posture correction", de: "Büro-Haltungskorrektur" }, price: 39, duration: "4 sem.", level: "Débutant", image: "🧘", icd10: "M54.2" },
+  { id: 7, cat: 6, title: { fr: "Renforcement core complet", en: "Complete core strengthening", de: "Komplette Rumpfkräftigung" }, price: 44, duration: "6 sem.", level: "Intermédiaire", image: "🏋️", icd10: "M62.81" },
+  { id: 8, cat: 7, title: { fr: "Mobilité articulaire globale", en: "Full body joint mobility", de: "Globale Gelenkmobilität" }, price: 39, duration: "4 sem.", level: "Débutant", image: "🤸", icd10: "M25.6" },
+  { id: 9, cat: 4, title: { fr: "Entorse cheville - Retour au sport", en: "Ankle sprain - Return to sport", de: "Knöchelverstauchung - Sportrückkehr" }, price: 49, duration: "6 sem.", level: "Intermédiaire", image: "🦶", icd10: "S93.4" },
+  { id: 10, cat: 8, title: { fr: "Rééducation post-partum", en: "Postpartum rehabilitation", de: "Postpartale Rehabilitation" }, price: 54, duration: "8 sem.", level: "Débutant", image: "👶", icd10: "O90.8" },
+  { id: 11, cat: 9, title: { fr: "Bundle dos complet", en: "Complete back bundle", de: "Komplettes Rücken-Bundle" }, price: 99, duration: "16 sem.", level: "Tous", image: "🎯", icd10: "M54" },
+  { id: 12, cat: 0, title: { fr: "Sciatique - Programme progressif", en: "Sciatica - Progressive program", de: "Ischias - Progressives Programm" }, price: 54, duration: "8 sem.", level: "Débutant", image: "🦴", icd10: "M54.3" },
 ];
 
 const ProgramsPage = () => {
@@ -94,6 +94,16 @@ const ProgramsPage = () => {
                   <div className="flex items-center gap-3 text-xs text-muted-foreground font-body mb-3">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {program.duration}</span>
                     <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {program.level}</span>
+                    <a
+                      href={`https://icd.who.int/browse10/2019/en#/${program.icd10}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      title={`ICD-10: ${program.icd10}`}
+                      className="flex items-center gap-1 hover:text-primary transition-colors"
+                    >
+                      <FileSearch className="w-3 h-3" /> {program.icd10}
+                    </a>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-heading font-bold text-primary">{program.price}€</span>
