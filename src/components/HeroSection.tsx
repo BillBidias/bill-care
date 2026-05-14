@@ -31,10 +31,10 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-1.5 rounded-full text-sm font-body font-semibold mb-6">
+            <span className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-1.5 rounded-full font-body font-semibold text-xs my-0 mb-px">
               {tr(t.hero.badge)}
             </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold leading-tight mb-6 mt-[39px]">
               {tr(t.hero.title1)}{" "}
               <span className="text-gradient-primary">{tr(t.hero.title2)}</span>
             </h1>
