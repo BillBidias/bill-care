@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
-            <span className="text-2xl font-heading font-bold text-primary-foreground">BillCARE</span>
+            <span className="text-2xl font-heading font-bold text-primary-foreground">Dein Digital-PHYSIO</span>
             <p className="mt-2 text-sm text-primary-foreground/70 max-w-xs font-body">{tr(t.footer.tagline)}</p>
           </div>
           <div className="flex flex-col gap-2">
@@ -26,7 +26,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-primary-foreground/20 pt-6 text-center">
-          <p className="text-xs text-primary-foreground/50 font-body">© {new Date().getFullYear()} BillCARE. {tr(t.footer.rights)}.</p>
+          <p className="text-xs text-primary-foreground/50 font-body">© {new Date().getFullYear()} Dein Digital-PHYSIO. {tr(t.footer.rights)}.</p>
         </div>
       </div>
     </footer>
