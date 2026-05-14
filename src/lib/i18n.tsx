@@ -7,7 +7,7 @@ const translations = {
     home: { fr: "Accueil", en: "Home", de: "Startseite" },
     about: { fr: "À propos", en: "About", de: "Über uns" },
     programs: { fr: "Programmes", en: "Programs", de: "Programme" },
-    howItWorks: { fr: "videos d entrainement", en: "Training videos", de: "Trainingsvideos" },
+    howItWorks: { fr: "Vidéos d’entraînement", en: "Training videos", de: "Trainingsvideos" },
     blog: { fr: "Blog & Conseils", en: "Blog & Tips", de: "Blog & Tipps" },
     faq: { fr: "FAQ", en: "FAQ", de: "FAQ" },
     contact: { fr: "Contact", en: "Contact", de: "Kontakt" },
@@ -83,7 +83,7 @@ const translations = {
     ],
   },
   howItWorks: {
-    title: { fr: "videos d entrainement", en: "Training videos", de: "Trainingsvideos" },
+    title: { fr: "Vidéos d’entraînement", en: "Training videos", de: "Trainingsvideos" },
     subtitle: { fr: "En 4 étapes simples vers votre rééducation", en: "4 simple steps to your rehabilitation", de: "In 4 einfachen Schritten zu Ihrer Rehabilitation" },
     steps: [
       { title: { fr: "Évaluez", en: "Assess", de: "Bewerten" }, desc: { fr: "Répondez au questionnaire pour identifier votre besoin", en: "Answer the questionnaire to identify your needs", de: "Beantworten Sie den Fragebogen" }, icon: "📋" },
