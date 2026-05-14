@@ -5,7 +5,8 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18n, useTr } from "@/lib/i18n";
-import { Search, Filter, Clock, Dumbbell, BarChart3, FileSearch } from "lucide-react";
+import { Search, Clock, BarChart3, FileSearch, PlayCircle, Lock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const mockPrograms = [
   // 12 régions corporelles. icd10 = liste de codes/plages CIM-10 pertinents (recherche par code possible).
@@ -28,6 +29,7 @@ const ProgramsPage = () => {
   const tr = useTr();
   const [selectedCat, setSelectedCat] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [openProgram, setOpenProgram] = useState<typeof mockPrograms[number] | null>(null);
 
   const filtered = mockPrograms.filter((p) => {
     if (selectedCat !== null && p.cat !== selectedCat) return false;
@@ -38,6 +40,40 @@ const ProgramsPage = () => {
     }
     return true;
   });
+
+  // Génère des rubriques à partir des codes ICD-10 (1 rubrique par code/plage)
+  const buildRubrics = (icd10: string) => {
+    const codes = icd10.split("·").map((c) => c.trim()).filter(Boolean);
+    const labelsByPrefix: Record<string, { fr: string; en: string; de: string }> = {
+      M: { fr: "Système musculo-squelettique", en: "Musculoskeletal", de: "Bewegungsapparat" },
+      G: { fr: "Système nerveux", en: "Nervous system", de: "Nervensystem" },
+      N: { fr: "Système urogénital", en: "Urogenital", de: "Urogenital" },
+      F: { fr: "Troubles psychiques", en: "Mental & behavioral", de: "Psychisch" },
+      J: { fr: "Système respiratoire", en: "Respiratory", de: "Atmungssystem" },
+      E: { fr: "Endocrinien & métabolique", en: "Endocrine & metabolic", de: "Endokrin" },
+      O: { fr: "Grossesse & post-partum", en: "Pregnancy & postpartum", de: "Schwangerschaft" },
+      Q: { fr: "Malformations congénitales", en: "Congenital", de: "Angeboren" },
+      R: { fr: "Symptômes & signes", en: "Symptoms & signs", de: "Symptome" },
+      Z: { fr: "Facteurs de santé & prévention", en: "Health factors & prevention", de: "Gesundheitsfaktoren" },
+    };
+    return codes.map((code, idx) => {
+      const prefix = code.charAt(0).toUpperCase();
+      const family = labelsByPrefix[prefix] ?? { fr: "Module thérapeutique", en: "Therapy module", de: "Therapiemodul" };
+      // 3 à 5 vidéos par rubrique en fonction de la longueur du code
+      const videoCount = 3 + (code.replace(/\D/g, "").length % 3);
+      const videos = Array.from({ length: videoCount }).map((_, vi) => ({
+        id: `${idx}-${vi}`,
+        duration: `${5 + vi * 3} min`,
+        free: vi === 0,
+        title: {
+          fr: `Séance ${vi + 1} — ${code}`,
+          en: `Session ${vi + 1} — ${code}`,
+          de: `Einheit ${vi + 1} — ${code}`,
+        },
+      }));
+      return { code, family, videos };
+    });
+  };
 
   return (
     <div className="min-h-screen">
@@ -89,6 +125,7 @@ const ProgramsPage = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
+                onClick={() => setOpenProgram(program)}
                 className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-all group cursor-pointer"
               >
                 <div className="h-40 bg-gradient-to-br from-primary/10 to-secondary flex items-center justify-center text-5xl group-hover:scale-105 transition-transform">
@@ -113,7 +150,11 @@ const ProgramsPage = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-heading font-bold text-primary">{program.price}€</span>
-                    <Button size="sm" className="rounded-full text-xs font-body">
+                    <Button
+                      size="sm"
+                      className="rounded-full text-xs font-body"
+                      onClick={(e) => { e.stopPropagation(); setOpenProgram(program); }}
+                    >
                       {tr({ fr: "Voir", en: "View", de: "Ansehen" })}
                     </Button>
                   </div>
@@ -123,6 +164,69 @@ const ProgramsPage = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!openProgram} onOpenChange={(o) => !o && setOpenProgram(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          {openProgram && (
+            <>
+              <DialogHeader>
+                <p className="text-[10px] uppercase tracking-wider font-body font-semibold text-primary/80">
+                  {tr(openProgram.region)}
+                </p>
+                <DialogTitle className="font-heading text-2xl">{tr(openProgram.title)}</DialogTitle>
+                <DialogDescription className="font-body flex flex-wrap items-center gap-3">
+                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {openProgram.duration}</span>
+                  <span className="flex items-center gap-1"><BarChart3 className="w-3.5 h-3.5" /> {openProgram.level}</span>
+                  <span className="flex items-center gap-1"><FileSearch className="w-3.5 h-3.5" /> {openProgram.icd10}</span>
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="mt-4 space-y-5">
+                {buildRubrics(openProgram.icd10).map((rub, ri) => (
+                  <div key={ri} className="border border-border rounded-xl p-4">
+                    <div className="flex items-baseline justify-between mb-3">
+                      <h4 className="font-heading font-semibold text-base">
+                        {tr(rub.family)}
+                      </h4>
+                      <span className="text-xs font-body text-primary font-semibold">{rub.code}</span>
+                    </div>
+                    <ul className="space-y-2">
+                      {rub.videos.map((v) => (
+                        <li key={v.id} className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-secondary/60 transition-colors">
+                          <div className="flex items-center gap-3 min-w-0">
+                            {v.free ? (
+                              <PlayCircle className="w-5 h-5 text-primary shrink-0" />
+                            ) : (
+                              <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
+                            )}
+                            <span className="font-body text-sm truncate">{tr(v.title)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-muted-foreground font-body">{v.duration}</span>
+                            {v.free && (
+                              <span className="text-[10px] font-body font-semibold uppercase bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                {tr({ fr: "Aperçu", en: "Preview", de: "Vorschau" })}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+                <span className="text-2xl font-heading font-bold text-primary">{openProgram.price}€</span>
+                <Button className="rounded-full font-body">
+                  {tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
