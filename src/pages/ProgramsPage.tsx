@@ -8,18 +8,19 @@ import { useI18n, useTr } from "@/lib/i18n";
 import { Search, Filter, Clock, Dumbbell, BarChart3, FileSearch } from "lucide-react";
 
 const mockPrograms = [
-  { id: 1, cat: 0, title: { fr: "Soulagement lombalgie chronique", en: "Chronic low back pain relief", de: "Chronische Rückenschmerzen Linderung" }, price: 49, duration: "6 sem.", level: "Débutant", image: "🦴", icd10: "M54.5" },
-  { id: 2, cat: 0, title: { fr: "Hernie discale - Phase 1", en: "Disc herniation - Phase 1", de: "Bandscheibenvorfall - Phase 1" }, price: 59, duration: "8 sem.", level: "Intermédiaire", image: "🦴", icd10: "M51.1" },
-  { id: 3, cat: 1, title: { fr: "Rééducation coiffe des rotateurs", en: "Rotator cuff rehabilitation", de: "Rotatorenmanschette Rehabilitation" }, price: 54, duration: "6 sem.", level: "Débutant", image: "💪", icd10: "M75.1" },
-  { id: 4, cat: 2, title: { fr: "Post-opératoire LCA", en: "Post-ACL surgery", de: "Nach Kreuzband-OP" }, price: 69, duration: "12 sem.", level: "Avancé", image: "🦵", icd10: "S83.5" },
-  { id: 5, cat: 3, title: { fr: "Arthrose de hanche", en: "Hip osteoarthritis", de: "Hüftarthrose" }, price: 49, duration: "8 sem.", level: "Débutant", image: "🫀", icd10: "M16.9" },
-  { id: 6, cat: 5, title: { fr: "Correction posturale bureau", en: "Office posture correction", de: "Büro-Haltungskorrektur" }, price: 39, duration: "4 sem.", level: "Débutant", image: "🧘", icd10: "M54.2" },
-  { id: 7, cat: 6, title: { fr: "Renforcement core complet", en: "Complete core strengthening", de: "Komplette Rumpfkräftigung" }, price: 44, duration: "6 sem.", level: "Intermédiaire", image: "🏋️", icd10: "M62.81" },
-  { id: 8, cat: 7, title: { fr: "Mobilité articulaire globale", en: "Full body joint mobility", de: "Globale Gelenkmobilität" }, price: 39, duration: "4 sem.", level: "Débutant", image: "🤸", icd10: "M25.6" },
-  { id: 9, cat: 4, title: { fr: "Entorse cheville - Retour au sport", en: "Ankle sprain - Return to sport", de: "Knöchelverstauchung - Sportrückkehr" }, price: 49, duration: "6 sem.", level: "Intermédiaire", image: "🦶", icd10: "S93.4" },
-  { id: 10, cat: 8, title: { fr: "Rééducation post-partum", en: "Postpartum rehabilitation", de: "Postpartale Rehabilitation" }, price: 54, duration: "8 sem.", level: "Débutant", image: "👶", icd10: "O90.8" },
-  { id: 11, cat: 9, title: { fr: "Bundle dos complet", en: "Complete back bundle", de: "Komplettes Rücken-Bundle" }, price: 99, duration: "16 sem.", level: "Tous", image: "🎯", icd10: "M54" },
-  { id: 12, cat: 0, title: { fr: "Sciatique - Programme progressif", en: "Sciatica - Progressive program", de: "Ischias - Progressives Programm" }, price: 54, duration: "8 sem.", level: "Débutant", image: "🦴", icd10: "M54.3" },
+  // Regroupement par régions corporelles, inspiré du CIM-10 (chap. XIII M00-M99 + autres chapitres pertinents)
+  { id: 1, cat: 0, region: { fr: "Rachis cervical", en: "Cervical spine", de: "Halswirbelsäule" }, title: { fr: "Cervicalgies & tensions cervicales", en: "Neck pain & cervical tension", de: "Nackenschmerzen & HWS-Verspannungen" }, price: 44, duration: "6 sem.", level: "Débutant", image: "🦴", icd10: "M54.2" },
+  { id: 2, cat: 0, region: { fr: "Rachis dorsal", en: "Thoracic spine", de: "Brustwirbelsäule" }, title: { fr: "Dorsalgies & posture thoracique", en: "Mid-back pain & thoracic posture", de: "BWS-Schmerzen & Haltung" }, price: 44, duration: "6 sem.", level: "Débutant", image: "🧘", icd10: "M54.6" },
+  { id: 3, cat: 0, region: { fr: "Rachis lombaire", en: "Lumbar spine", de: "Lendenwirbelsäule" }, title: { fr: "Lombalgie chronique & sciatique", en: "Chronic low back pain & sciatica", de: "Chron. Rückenschmerz & Ischias" }, price: 59, duration: "8 sem.", level: "Intermédiaire", image: "🦴", icd10: "M54.5" },
+  { id: 4, cat: 1, region: { fr: "Épaule", en: "Shoulder", de: "Schulter" }, title: { fr: "Coiffe des rotateurs & capsulite", en: "Rotator cuff & frozen shoulder", de: "Rotatorenmanschette & Schultersteife" }, price: 54, duration: "6 sem.", level: "Débutant", image: "💪", icd10: "M75.1" },
+  { id: 5, cat: 1, region: { fr: "Coude & poignet", en: "Elbow & wrist", de: "Ellbogen & Handgelenk" }, title: { fr: "Épicondylite & tendinopathies", en: "Tennis elbow & tendinopathies", de: "Epicondylitis & Tendinopathien" }, price: 44, duration: "5 sem.", level: "Débutant", image: "💪", icd10: "M77.1" },
+  { id: 6, cat: 1, region: { fr: "Main & doigts", en: "Hand & fingers", de: "Hand & Finger" }, title: { fr: "Canal carpien & arthrose digitale", en: "Carpal tunnel & finger arthritis", de: "Karpaltunnel & Fingerarthrose" }, price: 39, duration: "4 sem.", level: "Débutant", image: "✋", icd10: "G56.0" },
+  { id: 7, cat: 3, region: { fr: "Hanche", en: "Hip", de: "Hüfte" }, title: { fr: "Coxarthrose & prothèse de hanche", en: "Hip osteoarthritis & THR", de: "Hüftarthrose & Hüft-TEP" }, price: 54, duration: "8 sem.", level: "Débutant", image: "🦵", icd10: "M16.9" },
+  { id: 8, cat: 2, region: { fr: "Genou", en: "Knee", de: "Knie" }, title: { fr: "LCA, ménisque & gonarthrose", en: "ACL, meniscus & knee OA", de: "Kreuzband, Meniskus & Gonarthrose" }, price: 69, duration: "12 sem.", level: "Avancé", image: "🦵", icd10: "M17.9" },
+  { id: 9, cat: 4, region: { fr: "Cheville & pied", en: "Ankle & foot", de: "Sprunggelenk & Fuß" }, title: { fr: "Entorse cheville & fasciite plantaire", en: "Ankle sprain & plantar fasciitis", de: "Knöchelverstauchung & Plantarfasziitis" }, price: 49, duration: "6 sem.", level: "Intermédiaire", image: "🦶", icd10: "S93.4" },
+  { id: 10, cat: 5, region: { fr: "Système nerveux", en: "Nervous system", de: "Nervensystem" }, title: { fr: "Neuro-rééducation post-AVC", en: "Post-stroke neuro rehab", de: "Neuroreha nach Schlaganfall" }, price: 79, duration: "12 sem.", level: "Avancé", image: "🧠", icd10: "I69.4" },
+  { id: 11, cat: 6, region: { fr: "Système respiratoire", en: "Respiratory system", de: "Atmungssystem" }, title: { fr: "Réhabilitation respiratoire (BPCO)", en: "Pulmonary rehab (COPD)", de: "Atemtherapie (COPD)" }, price: 49, duration: "8 sem.", level: "Débutant", image: "🫁", icd10: "J44.9" },
+  { id: 12, cat: 8, region: { fr: "Périnée & post-partum", en: "Pelvic floor & postpartum", de: "Beckenboden & Wochenbett" }, title: { fr: "Périnée, incontinence & post-partum", en: "Pelvic floor, incontinence & postpartum", de: "Beckenboden, Inkontinenz & Postpartum" }, price: 54, duration: "8 sem.", level: "Débutant", image: "👶", icd10: "O90.8" },
 ];
 
 const ProgramsPage = () => {
@@ -90,6 +91,7 @@ const ProgramsPage = () => {
                   {program.image}
                 </div>
                 <div className="p-5">
+                  <p className="text-[10px] uppercase tracking-wider font-body font-semibold text-primary/80 mb-1">{tr(program.region)}</p>
                   <h3 className="font-body font-semibold text-sm mb-2 line-clamp-2">{tr(program.title)}</h3>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground font-body mb-3">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {program.duration}</span>
