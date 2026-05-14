@@ -34,15 +34,6 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Desktop */}
-        <div className="hidden lg:flex items-center gap-6">
-          {links.map((l) => (
-            <Link key={l.to} to={l.to} className="text-sm font-body font-medium text-muted-foreground hover:text-primary transition-colors">
-              {l.label}
-            </Link>
-          ))}
-        </div>
-
         <div className="hidden lg:flex items-center gap-3">
           <div className="flex items-center gap-1 border border-border rounded-full px-2 py-1">
             <Globe className="w-3.5 h-3.5 text-muted-foreground" />
@@ -68,6 +59,15 @@ const Navbar = () => {
         <button className="lg:hidden p-2" onClick={() => setOpen(!open)}>
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
+      </div>
+
+      {/* Desktop links row */}
+      <div className="hidden lg:flex container mx-auto items-center gap-6 px-4 pb-2 mt-[2px]">
+        {links.map((l) => (
+          <Link key={l.to} to={l.to} className="text-sm font-body font-medium text-muted-foreground hover:text-primary transition-colors">
+            {l.label}
+          </Link>
+        ))}
       </div>
 
       {/* Mobile menu */}
