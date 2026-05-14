@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X, Globe, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n, useTr, Lang } from "@/lib/i18n";
 
@@ -35,6 +35,9 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden lg:flex items-center gap-3">
+          <Link to="/cart" aria-label="Panier" className="p-2 rounded-full border border-border hover:text-primary transition-colors">
+            <ShoppingCart className="w-4 h-4" />
+          </Link>
           <div className="flex items-center gap-1 border border-border rounded-full px-2 py-1">
             <Globe className="w-3.5 h-3.5 text-muted-foreground" />
             {langs.map((l) => (
