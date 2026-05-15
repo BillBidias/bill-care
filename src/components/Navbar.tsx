@@ -23,6 +23,7 @@ const Navbar = () => {
     { to: "/blog", label: tr(t.nav.blog) },
     { to: "/faq", label: tr(t.nav.faq) },
     { to: "/contact", label: tr(t.nav.contact) },
+    { to: "/example", label: "Example" },
   ];
 
   return (
