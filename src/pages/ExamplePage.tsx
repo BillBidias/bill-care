@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTr } from "@/lib/i18n";
-import { PlayCircle, Lock, Clock, BarChart3, FileSearch, ChevronDown, ShoppingBasket } from "lucide-react";
+import { PlayCircle, Lock, Clock, BarChart3, FileSearch, ChevronDown, Eye, ShoppingBasket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { toast } from "@/components/ui/use-toast";
@@ -242,7 +242,10 @@ const ExamplePage = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-heading font-bold text-primary">{program.price}€</span>
                       <Button size="sm" className="rounded-full text-xs font-body">
-                        <ShoppingBasket className="w-3 h-3" /> {tr({ fr: "Voir", en: "View", de: "Ansehen" })}
+                        <ShoppingBasket className="w-3 h-3" />  Panier
+                      </Button>
+                      <Button size="sm" className="rounded-full">
+                        <Eye className="w-3 h-3" />
                       </Button>
                     </div>
                   </div>
@@ -312,7 +315,8 @@ const ExamplePage = () => {
                         <span className="text-2xl font-heading font-bold text-primary">{program.price}€</span>
                         <Button
                           className="rounded-full font-body"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             addItem({
                               id: program.id,
                               title: program.title,

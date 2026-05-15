@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Globe, ShoppingCart } from "lucide-react";
+import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { useI18n, useTr, Lang } from "@/lib/i18n";
 
@@ -14,6 +15,7 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { lang, setLang, t } = useI18n();
   const tr = useTr();
+  const { itemCount } = useCart();
 
   const links = [
     { to: "/", label: tr(t.nav.home) },
@@ -36,8 +38,13 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden lg:flex items-center gap-3">
-          <Link to="/cart" aria-label="Panier" className="p-2 rounded-full border border-border hover:text-primary transition-colors">
+          <Link to="/cart" aria-label="Panier" className="relative p-2 rounded-full border border-border hover:text-primary transition-colors">
             <ShoppingCart className="w-4 h-4" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary text-[10px] font-body font-bold text-primary-foreground flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
           </Link>
           <div className="flex items-center gap-1 border border-border rounded-full px-2 py-1">
             <Globe className="w-3.5 h-3.5 text-muted-foreground" />
