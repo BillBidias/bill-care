@@ -223,7 +223,7 @@ const ExamplePage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.02 }}
                   onClick={() => toggleExpand(program.id)}
-                  className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-all group cursor-pointer"
+                  className={`bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-all group cursor-pointer ${expandedId === program.id ? "ring-2 ring-primary/40 border border-primary/30 shadow-lg shadow-primary/10" : "border border-border"}`}
                 >
                   <div className="h-36 bg-gradient-to-br from-primary/10 to-secondary flex items-center justify-center text-4xl group-hover:scale-105 transition-transform relative">
                     {program.image}
@@ -259,7 +259,8 @@ const ExamplePage = () => {
                     transition={{ duration: 0.3 }}
                     className="col-span-full overflow-hidden"
                   >
-                    <div className="bg-card rounded-2xl border border-border/50 p-5 mt-2 mb-4">
+                    <div className="relative bg-gradient-to-br from-primary/[0.04] via-card to-secondary/20 rounded-2xl border-3 border-primary/50 shadow-lg shadow-primary/5 p-5 mt-2 mb-4">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-2xl" />
                       <div className="flex items-center gap-2 text-xs text-muted-foreground font-body mb-4">
                         <FileSearch className="w-3 h-3" />
                         <span>{program.price}</span>
