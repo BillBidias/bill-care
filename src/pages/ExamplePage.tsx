@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, Fragment } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useTr } from "@/lib/i18n";
-import { PlayCircle, Lock, Clock, BarChart3, FileSearch, ChevronDown } from "lucide-react";
+import { PlayCircle, Lock, Clock, BarChart3, FileSearch, ChevronDown, ShoppingBasket } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/lib/cart";
+import { toast } from "@/components/ui/use-toast";
 
 const ExamplePage = () => {
   const tr = useTr();
@@ -197,6 +199,7 @@ const ExamplePage = () => {
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const toggleExpand = (id: number) => setExpandedId(expandedId === id ? null : id);
+  const { addItem } = useCart();
 
   return (
     <div className="min-h-screen">
@@ -214,7 +217,7 @@ const ExamplePage = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {mockPrograms.map((program, i) => (
-              <div key={program.id}>
+              <Fragment key={program.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -230,7 +233,7 @@ const ExamplePage = () => {
                   </div>
                   <div className="p-4">
                     <p className="text-[10px] uppercase tracking-wider font-body font-semibold text-primary/80 mb-1">{tr(program.region)}</p>
-                    <h3 className="font-body font-semibold text-sm mb-2 line-clamp-2">{tr(program.title)}</h3>
+                    <h3 className="font-body font-semibold text-sm mb-2 line-clamp-2">{tr(program.title)} [{program.icd10}]</h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground font-body mb-2">
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {program.duration}</span>
                       <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {program.level}</span>
@@ -239,117 +242,97 @@ const ExamplePage = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-heading font-bold text-primary">{program.price}€</span>
                       <Button size="sm" className="rounded-full text-xs font-body">
-                        {tr({ fr: "Voir", en: "View", de: "Ansehen" })}
+                        <ShoppingBasket className="w-3 h-3" /> {tr({ fr: "Voir", en: "View", de: "Ansehen" })}
                       </Button>
                     </div>
                   </div>
                 </motion.div>
 
-                <AnimatePresence>
-                  {expandedId === program.id && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="bg-card rounded-2xl border border-border/50 p-5 mt-2 mb-4">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-body mb-4">
-                          <FileSearch className="w-3 h-3" />
-                          <span>{program.icd10}</span>
-                        </div>
+                {expandedId === program.id && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="col-span-full overflow-hidden"
+                  >
+                    <div className="bg-card rounded-2xl border border-border/50 p-5 mt-2 mb-4">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-body mb-4">
+                        <FileSearch className="w-3 h-3" />
+                        <span>{program.price}</span>
+                      </div>
 
-                        <div className="grid md:grid-cols-2 gap-5 mb-5">
-                          {program.weeks.map((week) => (
-                            <div key={week.week} className="border border-border rounded-xl overflow-hidden">
-                              <div className="bg-gradient-to-r from-primary/5 to-secondary/30 px-4 py-2.5">
-                                <h4 className="font-heading font-semibold text-sm">{tr(week.title)}</h4>
-                              </div>
-                              <div className="p-3 space-y-3">
-                                {week.videos.map((v) => (
-                                  <div key={v.id} className="group relative bg-card rounded-lg overflow-hidden border border-border/60 hover:border-primary/30 transition-all cursor-pointer">
-                                    <div className="flex gap-3 p-2">
-                                      <div className="relative w-24 h-16 shrink-0 rounded-md overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/40 flex items-center justify-center">
-                                        <span className="text-lg font-heading font-bold text-primary/40">
-                                          {v.id.slice(-1)}
-                                        </span>
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                          {v.free ? (
-                                            <div className="w-8 h-8 rounded-full bg-primary/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                                              <PlayCircle className="w-5 h-5 text-white fill-white" />
-                                            </div>
-                                          ) : (
-                                            <Lock className="w-4 h-4 text-muted-foreground/60" />
-                                          )}
-                                        </div>
-                                        <span className="absolute bottom-1 right-1 text-[9px] font-body font-semibold bg-black/50 text-white px-1 py-0.5 rounded">
-                                          {v.duration}
-                                        </span>
-                                      </div>
-                                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                        <span className="font-body text-xs leading-snug line-clamp-2">{tr(v.title)}</span>
-                                        {v.free && (
-                                          <span className="mt-1 self-start text-[9px] font-body font-semibold uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                                            {tr({ fr: "Aperçu", en: "Preview", de: "Vorschau" })}
-                                          </span>
+                      <div className="grid md:grid-cols-2 gap-5 mb-5">
+                        {program.weeks.map((week) => (
+                          <div key={week.week} className="border border-border rounded-xl overflow-hidden">
+                            <div className="bg-gradient-to-r from-primary/5 to-secondary/30 px-4 py-2.5">
+                              <h4 className="font-heading font-semibold text-sm">{tr(week.title)}</h4>
+                            </div>
+                            <div className="p-3 space-y-3">
+                              {week.videos.map((v) => (
+                                <div key={v.id} className="group relative bg-card rounded-lg overflow-hidden border border-border/60 hover:border-primary/30 transition-all cursor-pointer">
+                                  <div className="flex gap-3 p-2">
+                                    <div className="relative w-24 h-16 shrink-0 rounded-md overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/40 flex items-center justify-center">
+                                      <span className="text-lg font-heading font-bold text-primary/40">
+                                        {v.id.slice(-1)}
+                                      </span>
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                        {v.free ? (
+                                          <div className="w-8 h-8 rounded-full bg-primary/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                                            <PlayCircle className="w-5 h-5 text-white fill-white" />
+                                          </div>
+                                        ) : (
+                                          <Lock className="w-4 h-4 text-muted-foreground/60" />
                                         )}
                                       </div>
+                                      <span className="absolute bottom-1 right-1 text-[9px] font-body font-semibold bg-black/50 text-white px-1 py-0.5 rounded">
+                                        {v.duration}
+                                      </span>
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="space-y-4 mb-5">
-                          <h4 className="font-heading font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-                            {tr({ fr: "Rubriques ICD-10", en: "ICD-10 Rubrics", de: "ICD-10 Rubriken" })}
-                          </h4>
-                          {buildRubrics(program.icd10).map((rub, ri) => (
-                            <div key={ri} className="border border-border rounded-xl p-4">
-                              <div className="flex items-baseline justify-between mb-3">
-                                <h4 className="font-heading font-semibold text-sm">{tr(rub.family)}</h4>
-                                <span className="text-xs font-body text-primary font-semibold">{rub.code}</span>
-                              </div>
-                              <ul className="space-y-1.5">
-                                {rub.videos.map((v) => (
-                                  <li key={v.id} className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-secondary/60 transition-colors">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                      {v.free ? (
-                                        <PlayCircle className="w-4 h-4 text-primary shrink-0" />
-                                      ) : (
-                                        <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
-                                      )}
-                                      <span className="font-body text-xs truncate">{tr(v.title)}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className="text-xs text-muted-foreground font-body">{v.duration}</span>
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                      <span className="font-body text-xs leading-snug line-clamp-2">{tr(v.title)}</span>
                                       {v.free && (
-                                        <span className="text-[10px] font-body font-semibold uppercase bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                        <span className="mt-1 self-start text-[9px] font-body font-semibold uppercase bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
                                           {tr({ fr: "Aperçu", en: "Preview", de: "Vorschau" })}
                                         </span>
                                       )}
                                     </div>
-                                  </li>
-                                ))}
-                              </ul>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center justify-between border-t border-border pt-4">
-                          <span className="text-2xl font-heading font-bold text-primary">{program.price}€</span>
-                          <Button className="rounded-full font-body">
-                            {tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
-                          </Button>
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+
+                      <div className="space-y-4 mb-5">
+                      </div>
+
+                      <div className="flex items-center justify-between border-t border-border pt-4">
+                        <span className="text-2xl font-heading font-bold text-primary">{program.price}€</span>
+                        <Button
+                          className="rounded-full font-body"
+                          onClick={() => {
+                            addItem({
+                              id: program.id,
+                              title: program.title,
+                              price: program.price,
+                              image: program.image,
+                              region: program.region,
+                            });
+                            toast({
+                              title: tr({ fr: "Ajouté au panier", en: "Added to cart", de: "In den Warenkorb" }),
+                              description: tr(program.title),
+                            });
+                          }}
+                        >
+                          {tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </Fragment>
             ))}
           </div>
         </div>
