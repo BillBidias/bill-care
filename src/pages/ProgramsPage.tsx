@@ -7,18 +7,19 @@ import { Input } from "@/components/ui/input";
 import { useI18n, useTr } from "@/lib/i18n";
 import { Search, Clock, BarChart3, FileSearch, PlayCircle, Lock } from "lucide-react";
 import { programs as mockPrograms, type Program } from "@/data/programs";
+import type { ProgramCategoryKey } from "@/data/categories";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 
 const ProgramsPage = () => {
   const { t } = useI18n();
   const tr = useTr();
-  const [selectedCat, setSelectedCat] = useState<number | null>(null);
+  const [selectedCat, setSelectedCat] = useState<ProgramCategoryKey | null>(null);
   const [search, setSearch] = useState("");
   const [openProgram, setOpenProgram] = useState<Program | null>(null);
 
   const filtered = mockPrograms.filter((p) => {
-    if (selectedCat !== null && p.cat !== selectedCat) return false;
+    if (selectedCat !== null && p.category !== selectedCat) return false;
     if (search) {
       const q = search.toLowerCase();
       const hay = `${tr(p.title)} ${tr(p.region)} ${p.icd10}`.toLowerCase();
@@ -92,11 +93,11 @@ const ProgramsPage = () => {
             >
               {tr({ fr: "Tous", en: "All", de: "Alle" })}
             </button>
-            {t.categories.items.map((cat, i) => (
+            {t.categories.items.map((cat) => (
               <button
-                key={i}
-                onClick={() => setSelectedCat(i)}
-                className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${selectedCat === i ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"}`}
+                key={cat.key}
+                onClick={() => setSelectedCat(cat.key)}
+                className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${selectedCat === cat.key ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"}`}
               >
                 {cat.icon} {tr(cat.name)}
               </button>
