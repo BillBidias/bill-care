@@ -115,6 +115,15 @@ const translations = {
   },
 };
 
+/** Resolve a stable category key to its localized label (order-independent). */
+export const getCategoryLabel = (key: ProgramCategoryKey): LocalizedLabel => {
+  const item = translations.categories.items.find((c) => c.key === key);
+  if (!item) throw new Error(`Unknown category key: ${key}`);
+  return item.name;
+};
+
+export type LocalizedLabel = { fr: string; en: string; de: string };
+
 type Translations = typeof translations;
 
 interface I18nContextType {
