@@ -1,3 +1,4 @@
+import type { ProgramCategoryKey } from "@/data/categories";
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
 
 export type Lang = "fr" | "en" | "de";
@@ -70,16 +71,16 @@ const translations = {
     },
     viewAll: { fr: "Voir tout", en: "View all", de: "Alle anzeigen" },
     items: [
-      { name: { fr: "Rachis & Dos", en: "Spine & Back", de: "Wirbelsäule & Rücken" }, count: 12, icon: "🦴", color: "from-primary/20 to-secondary" },
-      { name: { fr: "Épaule & Bras", en: "Shoulder & Arm", de: "Schulter & Arm" }, count: 10, icon: "💪", color: "from-accent/20 to-cream" },
-      { name: { fr: "Genou & Cuisse", en: "Knee & Thigh", de: "Knie & Oberschenkel" }, count: 11, icon: "🦵", color: "from-primary/20 to-mint" },
-      { name: { fr: "Hanche & Bassin", en: "Hip & Pelvis", de: "Hüfte & Becken" }, count: 10, icon: "🫀", color: "from-sage/30 to-secondary" },
-      { name: { fr: "Cheville & Pied", en: "Ankle & Foot", de: "Knöchel & Fuß" }, count: 9, icon: "🦶", color: "from-accent/20 to-secondary" },
-      { name: { fr: "Posture & Ergonomie", en: "Posture & Ergonomics", de: "Haltung & Ergonomie" }, count: 10, icon: "🧘", color: "from-mint to-secondary" },
-      { name: { fr: "Renforcement global", en: "Full body strength", de: "Ganzkörperkräftigung" }, count: 10, icon: "🏋️", color: "from-primary/15 to-cream" },
-      { name: { fr: "Mobilité & Souplesse", en: "Mobility & Flexibility", de: "Mobilität & Flexibilität" }, count: 10, icon: "🤸", color: "from-sage/20 to-mint" },
-      { name: { fr: "Populations spéciales", en: "Special populations", de: "Spezielle Gruppen" }, count: 10, icon: "👶", color: "from-accent/15 to-secondary" },
-      { name: { fr: "Bundles & Parcours", en: "Bundles & Paths", de: "Bundles & Pfade" }, count: 8, icon: "🎯", color: "from-primary/20 to-sage/20" },
+      { key: "spine-back", name: { fr: "Rachis & Dos", en: "Spine & Back", de: "Wirbelsäule & Rücken" }, count: 12, icon: "🦴", color: "from-primary/20 to-secondary" },
+      { key: "shoulder-arm", name: { fr: "Épaule & Bras", en: "Shoulder & Arm", de: "Schulter & Arm" }, count: 10, icon: "💪", color: "from-accent/20 to-cream" },
+      { key: "knee-thigh", name: { fr: "Genou & Cuisse", en: "Knee & Thigh", de: "Knie & Oberschenkel" }, count: 11, icon: "🦵", color: "from-primary/20 to-mint" },
+      { key: "hip-pelvis", name: { fr: "Hanche & Bassin", en: "Hip & Pelvis", de: "Hüfte & Becken" }, count: 10, icon: "🫀", color: "from-sage/30 to-secondary" },
+      { key: "ankle-foot", name: { fr: "Cheville & Pied", en: "Ankle & Foot", de: "Knöchel & Fuß" }, count: 9, icon: "🦶", color: "from-accent/20 to-secondary" },
+      { key: "posture-ergonomics", name: { fr: "Posture & Ergonomie", en: "Posture & Ergonomics", de: "Haltung & Ergonomie" }, count: 10, icon: "🧘", color: "from-mint to-secondary" },
+      { key: "full-body-strength", name: { fr: "Renforcement global", en: "Full body strength", de: "Ganzkörperkräftigung" }, count: 10, icon: "🏋️", color: "from-primary/15 to-cream" },
+      { key: "mobility-flexibility", name: { fr: "Mobilité & Souplesse", en: "Mobility & Flexibility", de: "Mobilität & Flexibilität" }, count: 10, icon: "🤸", color: "from-sage/20 to-mint" },
+      { key: "special-populations", name: { fr: "Populations spéciales", en: "Special populations", de: "Spezielle Gruppen" }, count: 10, icon: "👶", color: "from-accent/15 to-secondary" },
+      { key: "bundles-paths", name: { fr: "Bundles & Parcours", en: "Bundles & Paths", de: "Bundles & Pfade" }, count: 8, icon: "🎯", color: "from-primary/20 to-sage/20" },
     ],
   },
   howItWorks: {
