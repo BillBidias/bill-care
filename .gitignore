@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 bun.lock
 bun.lockb
+
+# Local environment files (never commit real credentials)
+.env
+.env.*
+!.env.example
