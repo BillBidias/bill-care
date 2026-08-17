@@ -21,7 +21,7 @@ describe("programme catalogue data source", () => {
 
   it("keeps all required localized fields", () => {
     programs.forEach((p) => {
-      expect(typeof p.cat).toBe("number");
+      expect(typeof p.category).toBe("string");
       expect(p.duration).toBeTruthy();
       expect(p.level).toBeTruthy();
       expect(p.image).toBeTruthy();
@@ -35,7 +35,7 @@ describe("programme catalogue data source", () => {
   it("retains known programme values", () => {
     const knee = programs.find((p) => p.id === 7)!;
     expect(knee.price).toBe(69);
-    expect(knee.cat).toBe(2);
+    expect(knee.category).toBe("knee-thigh");
     expect(knee.icd10).toBe("M17 · M22 · M23 · M71 · M76");
     expect(knee.image).toBe("🦵");
     expect(knee.duration).toBe("12 sem.");

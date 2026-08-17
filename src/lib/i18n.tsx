@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 
 export type Lang = "fr" | "en" | "de";
 
-const translations = {
+export const translations = {
   nav: {
     home: { fr: "Accueil", en: "Home", de: "Startseite" },
     about: { fr: "À propos", en: "About", de: "Über uns" },
