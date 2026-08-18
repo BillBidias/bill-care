@@ -96,7 +96,7 @@ const ProgramsPage = () => {
             {t.categories.items.map((cat) => (
               <button
                 key={cat.key}
-                onClick={() => setSelectedCat(cat.key)}
+                onClick={() => setSelectedCat(cat.key as ProgramCategoryKey)}
                 className={`px-4 py-1.5 rounded-full text-sm font-body font-medium transition-colors ${selectedCat === cat.key ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-primary/10"}`}
               >
                 {cat.icon} {tr(cat.name)}
