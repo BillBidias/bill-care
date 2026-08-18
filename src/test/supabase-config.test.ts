@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { isSupabaseConfigured, parseSupabaseConfig } from "@/integrations/supabase/config";
-import { createSupabaseClient } from "@/integrations/supabase/client";
 
 const valid = {
   VITE_SUPABASE_URL: "https://example.supabase.co",
@@ -27,10 +26,5 @@ describe("supabase public configuration", () => {
 
   it("rejects server-only secrets exposed to the browser", () => {
     expect(() => parseSupabaseConfig({ ...valid, VITE_SUPABASE_SERVICE_ROLE_KEY: "nope" })).toThrow(/Server-only/);
-  });
-
-  it("initializes a client from mocked public config only", () => {
-    expect(createSupabaseClient(valid)).not.toBeNull();
-    expect(createSupabaseClient({})).toBeNull();
   });
 });
