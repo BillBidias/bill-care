@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { isSupabaseConfigured, parseSupabaseConfig } from "@/integrations/supabase/config";
+import { getSupabaseClient, resetSupabaseClient } from "@/integrations/supabase/client";
 
 const valid = {
   VITE_SUPABASE_URL: "https://example.supabase.co",
@@ -26,5 +27,19 @@ describe("supabase public configuration", () => {
 
   it("rejects server-only secrets exposed to the browser", () => {
     expect(() => parseSupabaseConfig({ ...valid, VITE_SUPABASE_SERVICE_ROLE_KEY: "nope" })).toThrow(/Server-only/);
+  });
+});
+
+describe("supabase browser client", () => {
+  beforeEach(() => resetSupabaseClient());
+
+  it("returns null when Supabase is not configured", () => {
+    expect(getSupabaseClient({})).toBeNull();
+  });
+
+  it("lazily creates and caches a client once configured", () => {
+    const client = getSupabaseClient(valid);
+    expect(client).not.toBeNull();
+    expect(getSupabaseClient(valid)).toBe(client);
   });
 });
