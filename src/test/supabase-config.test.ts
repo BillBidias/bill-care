@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isSupabaseConfigured, parseSupabaseConfig } from "@/integrations/supabase/config";
-import { supabase } from "@/integrations/supabase/client";
+import { getSupabaseClient, resetSupabaseClient } from "@/integrations/supabase/client";
 
 const valid = {
   VITE_SUPABASE_URL: "https://example.supabase.co",
@@ -31,8 +31,29 @@ describe("supabase public configuration", () => {
 });
 
 describe("supabase browser client", () => {
-  it("exposes a configured singleton client", () => {
-    expect(supabase).toBeTruthy();
-    expect(supabase.auth).toBeTruthy();
+  beforeEach(() => {
+    resetSupabaseClient();
+  });
+
+  it("returns null when not configured", () => {
+    vi.stubEnv("VITE_SUPABASE_URL", "");
+    vi.stubEnv("VITE_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(getSupabaseClient()).toBeNull();
+  });
+
+  it("exposes a configured client when env is set", () => {
+    vi.stubEnv("VITE_SUPABASE_URL", valid.VITE_SUPABASE_URL);
+    vi.stubEnv("VITE_SUPABASE_PUBLISHABLE_KEY", valid.VITE_SUPABASE_PUBLISHABLE_KEY);
+    const client = getSupabaseClient();
+    expect(client).not.toBeNull();
+    expect(client?.auth).toBeTruthy();
+  });
+
+  it("caches the client across calls", () => {
+    vi.stubEnv("VITE_SUPABASE_URL", valid.VITE_SUPABASE_URL);
+    vi.stubEnv("VITE_SUPABASE_PUBLISHABLE_KEY", valid.VITE_SUPABASE_PUBLISHABLE_KEY);
+    const first = getSupabaseClient();
+    const second = getSupabaseClient();
+    expect(first).toBe(second);
   });
 });
