@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { isSupabaseConfigured, parseSupabaseConfig } from "@/integrations/supabase/config";
-import { getSupabaseClient, resetSupabaseClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 const valid = {
   VITE_SUPABASE_URL: "https://example.supabase.co",
@@ -31,15 +31,8 @@ describe("supabase public configuration", () => {
 });
 
 describe("supabase browser client", () => {
-  beforeEach(() => resetSupabaseClient());
-
-  it("returns null when Supabase is not configured", () => {
-    expect(getSupabaseClient({})).toBeNull();
-  });
-
-  it("lazily creates and caches a client once configured", () => {
-    const client = getSupabaseClient(valid);
-    expect(client).not.toBeNull();
-    expect(getSupabaseClient(valid)).toBe(client);
+  it("exposes a configured singleton client", () => {
+    expect(supabase).toBeTruthy();
+    expect(supabase.auth).toBeTruthy();
   });
 });
