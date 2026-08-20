@@ -5,11 +5,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { CartProvider } from "@/lib/cart";
+import { AuthProvider } from "@/auth/AuthProvider";
 import Index from "./pages/Index.tsx";
 import ProgramsPage from "./pages/ProgramsPage.tsx";
 import AboutPage from "./pages/AboutPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ExamplePage from "./pages/ExamplePage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import RegisterPage from "./pages/RegisterPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +22,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <AuthProvider>
         <CartProvider>
         <BrowserRouter>
           <Routes>
@@ -26,10 +30,13 @@ const App = () => (
             <Route path="/programs" element={<ProgramsPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/example" element={<ExamplePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
         </CartProvider>
+        </AuthProvider>
       </TooltipProvider>
     </I18nProvider>
   </QueryClientProvider>

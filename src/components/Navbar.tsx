@@ -4,6 +4,7 @@ import { Menu, X, Globe, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { useI18n, useTr, Lang } from "@/lib/i18n";
+import { useAuth } from "@/auth/useAuth";
 
 const langs: { code: Lang; label: string }[] = [
   { code: "fr", label: "FR" },
@@ -16,6 +17,8 @@ const Navbar = () => {
   const { lang, setLang, t } = useI18n();
   const tr = useTr();
   const { itemCount } = useCart();
+  const { user, signOut } = useAuth();
+  const logoutLabel = tr({ fr: "Se déconnecter", en: "Log out", de: "Abmelden" });
 
   const links = [
     { to: "/", label: tr(t.nav.home) },
@@ -58,9 +61,15 @@ const Navbar = () => {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/login">{tr(t.nav.login)}</Link>
-          </Button>
+          {user ? (
+            <Button variant="outline" size="sm" onClick={() => void signOut()}>
+              {logoutLabel}
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/login">{tr(t.nav.login)}</Link>
+            </Button>
+          )}
           <Button size="sm" asChild>
             <Link to="/programs">{tr(t.nav.startNow)}</Link>
           </Button>
@@ -95,7 +104,7 @@ const Navbar = () => {
             ))}
           </div>
           <div className="flex gap-2 mt-3">
-            <Button variant="outline" size="sm" className="flex-1" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>
+            {user ? (<Button variant="outline" size="sm" className="flex-1" onClick={() => { setOpen(false); void signOut(); }}>{logoutLabel}</Button>) : (<Button variant="outline" size="sm" className="flex-1" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>)}
             <Button size="sm" className="flex-1" asChild><Link to="/programs">{tr(t.nav.startNow)}</Link></Button>
           </div>
         </div>
