@@ -69,19 +69,15 @@ end
 $$;
 
 -- 1. Table privileges -------------------------------------------------------
--- Read-only SELECT for the public-facing roles. No write privileges are
--- granted. service_role is intentionally untouched here (admin bypass only).
-grant select on public.programme_categories to anon;
-grant select on public.programme_categories to authenticated;
+-- Strict read-only SELECT for the public-facing roles. ALL existing default
+-- privileges (SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER)
+-- are revoked first, then only SELECT is re-granted. service_role is
+-- intentionally untouched here (admin bypass only).
+revoke all privileges on public.programme_categories from anon, authenticated;
+revoke all privileges on public.programmes from anon, authenticated;
 
-grant select on public.programmes to anon;
-grant select on public.programmes to authenticated;
-
--- Ensure no write privileges were inherited implicitly.
-revoke insert, update, delete, truncate on public.programme_categories from anon;
-revoke insert, update, delete, truncate on public.programme_categories from authenticated;
-revoke insert, update, delete, truncate on public.programmes from anon;
-revoke insert, update, delete, truncate on public.programmes from authenticated;
+grant select on public.programme_categories to anon, authenticated;
+grant select on public.programmes to anon, authenticated;
 
 -- 2. Category read policy ---------------------------------------------------
 -- Public read access limited to active categories only.
