@@ -113,7 +113,8 @@ const ProgramsPage = () => {
           </div>
 
           {/* Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div aria-busy={loading} className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
             {filtered.map((program, i) => (
               <motion.div
                 key={program.id}
