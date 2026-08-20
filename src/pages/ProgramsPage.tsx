@@ -6,19 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18n, useTr } from "@/lib/i18n";
 import { Search, Clock, BarChart3, FileSearch, PlayCircle, Lock } from "lucide-react";
-import { programs as mockPrograms, type Program } from "@/data/programs";
+import { type Program } from "@/data/programs";
 import type { ProgramCategoryKey } from "@/data/categories";
+import { useCatalogue } from "@/hooks/useCatalogue";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 
 const ProgramsPage = () => {
   const { t } = useI18n();
   const tr = useTr();
+  const { programs: catalogue, categoryKeys, loading } = useCatalogue();
   const [selectedCat, setSelectedCat] = useState<ProgramCategoryKey | null>(null);
   const [search, setSearch] = useState("");
   const [openProgram, setOpenProgram] = useState<Program | null>(null);
 
-  const filtered = mockPrograms.filter((p) => {
+  const orderedCategories = categoryKeys
+    .map((key) => t.categories.items.find((c) => c.key === key))
+    .filter((c): c is (typeof t.categories.items)[number] => Boolean(c));
+
+  const filtered = catalogue.filter((p) => {
     if (selectedCat !== null && p.category !== selectedCat) return false;
     if (search) {
       const q = search.toLowerCase();
@@ -27,6 +33,7 @@ const ProgramsPage = () => {
     }
     return true;
   });
+
 
   // Génère des rubriques à partir des codes ICD-10 (1 rubrique par code/plage)
   const buildRubrics = (icd10: string) => {
