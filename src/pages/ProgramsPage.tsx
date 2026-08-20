@@ -100,7 +100,8 @@ const ProgramsPage = () => {
             >
               {tr({ fr: "Tous", en: "All", de: "Alle" })}
             </button>
-            {t.categories.items.map((cat) => (
+            {orderedCategories.map((cat) => (
+
               <button
                 key={cat.key}
                 onClick={() => setSelectedCat(cat.key as ProgramCategoryKey)}
