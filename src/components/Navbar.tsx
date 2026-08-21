@@ -106,6 +106,12 @@ const Navbar = () => {
               {l.label}
             </Link>
           ))}
+          {user && (
+            <Link to="/account" onClick={() => setOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-primary">
+              {accountLabel}
+            </Link>
+          )}
+
           <div className="flex items-center gap-2 mt-3">
             {langs.map((l) => (
               <button key={l.code} onClick={() => setLang(l.code)} className={`text-xs font-medium px-2 py-1 rounded-full ${lang === l.code ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{l.label}</button>
