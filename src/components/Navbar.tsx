@@ -19,6 +19,8 @@ const Navbar = () => {
   const { itemCount } = useCart();
   const { user, signOut } = useAuth();
   const logoutLabel = tr({ fr: "Se déconnecter", en: "Log out", de: "Abmelden" });
+  const accountLabel = tr({ fr: "Mon compte", en: "My account", de: "Mein Konto" });
+
 
   const links = [
     { to: "/", label: tr(t.nav.home) },
@@ -62,14 +64,20 @@ const Navbar = () => {
             ))}
           </div>
           {user ? (
-            <Button variant="outline" size="sm" onClick={() => void signOut()}>
-              {logoutLabel}
-            </Button>
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/account">{accountLabel}</Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => void signOut()}>
+                {logoutLabel}
+              </Button>
+            </>
           ) : (
             <Button variant="outline" size="sm" asChild>
               <Link to="/login">{tr(t.nav.login)}</Link>
             </Button>
           )}
+
           <Button size="sm" asChild>
             <Link to="/programs">{tr(t.nav.startNow)}</Link>
           </Button>
