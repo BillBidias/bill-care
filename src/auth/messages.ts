@@ -63,7 +63,33 @@ export const authMessages: Record<string, Localized> = {
     en: "Something went wrong. Please try again.",
     de: "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
   },
+  "profile.loadFailed": {
+    fr: "Impossible de charger votre profil. Réessayez.",
+    en: "Unable to load your profile. Please try again.",
+    de: "Ihr Profil konnte nicht geladen werden. Bitte erneut versuchen.",
+  },
+  "profile.saveFailed": {
+    fr: "Impossible d'enregistrer votre profil. Réessayez.",
+    en: "Unable to save your profile. Please try again.",
+    de: "Ihr Profil konnte nicht gespeichert werden. Bitte erneut versuchen.",
+  },
+  "profile.missing": {
+    fr: "Profil introuvable. Contactez le support.",
+    en: "Profile not found. Please contact support.",
+    de: "Profil nicht gefunden. Bitte den Support kontaktieren.",
+  },
+  "profile.invalidLanguage": {
+    fr: "Langue invalide.",
+    en: "Invalid language.",
+    de: "Ungültige Sprache.",
+  },
+  "profile.displayNameTooLong": {
+    fr: "Le nom affiché doit contenir au maximum 100 caractères.",
+    en: "Display name must be 100 characters or fewer.",
+    de: "Der Anzeigename darf höchstens 100 Zeichen haben.",
+  },
 };
+
 
 export function authMessage(key: string): Localized {
   return authMessages[key] ?? authMessages["auth.generic"];
