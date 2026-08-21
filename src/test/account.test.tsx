@@ -4,15 +4,23 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import React from "react";
 
-const fetchOwnProfile = vi.fn();
-const updateOwnProfile = vi.fn();
+const mocks = vi.hoisted(() => ({
+  fetchOwnProfile: vi.fn(),
+  updateOwnProfile: vi.fn(),
+}));
+const { fetchOwnProfile, updateOwnProfile } = mocks;
 
 vi.mock("@/data/profileRepository", async () => {
   const actual = await vi.importActual<typeof import("@/data/profileRepository")>(
     "@/data/profileRepository",
   );
-  return { ...actual, fetchOwnProfile, updateOwnProfile };
+  return {
+    ...actual,
+    fetchOwnProfile: mocks.fetchOwnProfile,
+    updateOwnProfile: mocks.updateOwnProfile,
+  };
 });
+
 
 let currentUser: { id: string; email: string } | null = null;
 let authLoading = false;
