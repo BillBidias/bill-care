@@ -29,3 +29,5 @@ bun.lockb
 .env
 .env.*
 !.env.example
+# Root .env holds ONLY browser-public VITE_* values and must persist across sandbox rebuilds
+!.env
