@@ -127,7 +127,7 @@ begin
   begin
     insert into public.order_items (order_id, programme_id, programme_title,
                                     unit_amount, currency)
-    select 'a0000000-0000-4000-8000-000000000001', p.id,
+    select 'a0000000-0000-4000-8000-000000000001'::uuid, p.id,
            '{"fr":"x","en":"x","de":"x"}'::jsonb, 0, 'EUR'
     from public.programmes p order by p.id limit 1;
     raise exception 'P12 TEST FAILED: % unexpectedly succeeded', v_op;
