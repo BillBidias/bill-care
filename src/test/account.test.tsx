@@ -155,4 +155,59 @@ describe("/account", () => {
     renderAccount();
     expect(await screen.findByRole("alert")).toHaveTextContent(/indisponible/i);
   });
+
+  it("shows success then navigates to / after a successful update", async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    renderAccount();
+    const input = await screen.findByDisplayValue("Bill");
+    await user.clear(input);
+    await user.type(input, "  Bill B  ");
+    await user.selectOptions(screen.getByLabelText(/Langue préférée/i), "fr");
+    await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
+
+    await waitFor(() =>
+      expect(updateOwnProfile).toHaveBeenCalledWith("user-1", {
+        display_name: "Bill B",
+        preferred_language: "fr",
+      }),
+    );
+    // Success message shown immediately; still on /account (no home text yet).
+    expect(await screen.findByRole("status")).toHaveTextContent(/enregistré/i);
+    expect(screen.queryByText("home page")).not.toBeInTheDocument();
+
+    // After ~1s delay, internal React Router navigation to / occurs.
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+    await waitFor(() => expect(screen.getByText("home page")).toBeInTheDocument());
+    vi.useRealTimers();
+  });
+
+  it("stays on /account when the update fails", async () => {
+    const user = userEvent.setup();
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/enregistrer/i);
+    expect(screen.queryByText("home page")).not.toBeInTheDocument();
+  });
+
+  it("does not redirect before the successful update is confirmed", async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
+
+    // While the update promise is still pending (not yet confirmed),
+    // no navigation occurs even after the redirect delay has elapsed.
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(screen.queryByText("home page")).not.toBeInTheDocument();
+    // Still on the account page: the form button is present.
+    expect(screen.getByRole("button", { name: /Enregistrer/i })).toBeInTheDocument();
+    vi.useRealTimers();
+  });
 });
