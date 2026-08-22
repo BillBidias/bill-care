@@ -104,7 +104,7 @@ begin
   begin
     update public.orders
        set status = 'paid'
-     where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+     where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid;
     raise exception 'P12 TEST FAILED: % unexpectedly succeeded', v_op;
   exception
     when insufficient_privilege then
