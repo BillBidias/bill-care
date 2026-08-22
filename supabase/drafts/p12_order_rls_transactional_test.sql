@@ -92,7 +92,7 @@ begin
   v_op := 'orders INSERT';
   begin
     insert into public.orders (user_id, total_amount, currency)
-    values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 0, 'EUR');
+    values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, 0, 'EUR');
     raise exception 'P12 TEST FAILED: % unexpectedly succeeded', v_op;
   exception
     when insufficient_privilege then
