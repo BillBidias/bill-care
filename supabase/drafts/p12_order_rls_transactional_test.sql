@@ -16,9 +16,9 @@ begin;
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password,
                         created_at, updated_at)
 values
-  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000',
+  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, '00000000-0000-0000-0000-000000000000'::uuid,
    'authenticated', 'authenticated', 'p12-test-a@example.invalid', '', now(), now()),
-  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '00000000-0000-0000-0000-000000000000',
+  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid, '00000000-0000-0000-0000-000000000000'::uuid,
    'authenticated', 'authenticated', 'p12-test-b@example.invalid', '', now(), now());
 
 -- 2. Controlled orders, one per user. Uses an existing programme id.
