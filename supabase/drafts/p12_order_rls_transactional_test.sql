@@ -34,8 +34,8 @@ insert into public.order_items (order_id, programme_id, programme_title, unit_am
 select o.id, p.id, p.title, p.price_amount, p.currency
 from public.orders o
 cross join (select id, title, price_amount, currency from public.programmes order by id limit 1) p
-where o.id in ('a0000000-0000-4000-8000-000000000001',
-               'b0000000-0000-4000-8000-000000000002');
+where o.id in ('a0000000-0000-4000-8000-000000000001'::uuid,
+               'b0000000-0000-4000-8000-000000000002'::uuid);
 
 -- 3. Simulate authenticated User A.
 set local role authenticated;
