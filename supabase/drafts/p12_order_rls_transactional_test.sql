@@ -70,7 +70,7 @@ begin
 
   select count(*) into v_other_items
   from public.order_items
-  where order_id = 'b0000000-0000-4000-8000-000000000002';
+  where order_id = 'b0000000-0000-4000-8000-000000000002'::uuid;
   if v_other_items <> 0 then
     raise exception 'P12 TEST FAILED: User A must not see User B order_items, saw %', v_other_items;
   end if;
