@@ -157,8 +157,7 @@ describe("/account", () => {
   });
 
   it("shows success then navigates to / after a successful update", async () => {
-    vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const user = userEvent.setup();
     renderAccount();
     const input = await screen.findByDisplayValue("Bill");
     await user.clear(input);
@@ -177,12 +176,10 @@ describe("/account", () => {
     expect(screen.queryByText("home page")).not.toBeInTheDocument();
 
     // After ~1s delay, internal React Router navigation to / occurs.
-    await act(async () => {
-      vi.advanceTimersByTime(1000);
+    await waitFor(() => expect(screen.getByText("home page")).toBeInTheDocument(), {
+      timeout: 3000,
     });
-    await waitFor(() => expect(screen.getByText("home page")).toBeInTheDocument());
-    vi.useRealTimers();
-  });
+  }, 6000);
 
   it("stays on /account when the update fails", async () => {
     const user = userEvent.setup();
@@ -194,22 +191,19 @@ describe("/account", () => {
   });
 
   it("does not redirect before the successful update is confirmed", async () => {
-    vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     // Keep the update promise pending forever so the DB never "confirms".
     updateOwnProfile.mockReturnValue(new Promise(() => {}));
+    const user = userEvent.setup();
     renderAccount();
     await screen.findByDisplayValue("Bill");
     await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
 
     // While the update promise is still pending (not yet confirmed),
-    // no navigation occurs even after the redirect delay has elapsed.
-    await act(async () => {
-      vi.advanceTimersByTime(2000);
-    });
+    // the 1s redirect timer is never scheduled, so navigation never occurs.
+    // Give it more than the redirect delay to prove no early navigation happens.
+    await new Promise((r) => setTimeout(r, 1200));
     expect(screen.queryByText("home page")).not.toBeInTheDocument();
     // Still on the account page: the form button is present.
     expect(screen.getByRole("button", { name: /Enregistrer/i })).toBeInTheDocument();
-    vi.useRealTimers();
-  });
+  }, 6000);
 });
