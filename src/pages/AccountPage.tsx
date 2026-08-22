@@ -86,6 +86,9 @@ const AccountPage = () => {
     }
     applyProfile(result.profile);
     setSaved(true);
+    // Redirect to home only AFTER the Supabase update is confirmed.
+    // Use a short delay so the user sees the localized success message.
+    window.setTimeout(() => navigate("/"), 1000);
   };
 
   return (
