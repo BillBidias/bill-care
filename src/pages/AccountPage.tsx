@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,6 +27,7 @@ const languageOptions: { value: PreferredLanguage; label: string }[] = [
 
 const AccountPage = () => {
   const tr = useTr();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -84,6 +86,9 @@ const AccountPage = () => {
     }
     applyProfile(result.profile);
     setSaved(true);
+    // Redirect to home only AFTER the Supabase update is confirmed.
+    // Use a short delay so the user sees the localized success message.
+    window.setTimeout(() => navigate("/"), 1000);
   };
 
   return (

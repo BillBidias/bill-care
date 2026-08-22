@@ -56,6 +56,7 @@ const renderAccount = () =>
       <CartProvider>
         <MemoryRouter initialEntries={["/account"]}>
           <Routes>
+            <Route path="/" element={<div>home page</div>} />
             <Route path="/login" element={<div>login page</div>} />
             <Route
               path="/account"
@@ -154,4 +155,56 @@ describe("/account", () => {
     renderAccount();
     expect(await screen.findByRole("alert")).toHaveTextContent(/indisponible/i);
   });
+
+  it("shows success then navigates to / after a successful update", async () => {
+    const user = userEvent.setup();
+    renderAccount();
+    const input = await screen.findByDisplayValue("Bill");
+    await user.clear(input);
+    await user.type(input, "  Bill B  ");
+    await user.selectOptions(screen.getByLabelText(/Langue préférée/i), "fr");
+    await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
+
+    await waitFor(() =>
+      expect(updateOwnProfile).toHaveBeenCalledWith("user-1", {
+        display_name: "Bill B",
+        preferred_language: "fr",
+      }),
+    );
+    // Success message shown immediately; still on /account (no home text yet).
+    expect(await screen.findByRole("status")).toHaveTextContent(/enregistré/i);
+    expect(screen.queryByText("home page")).not.toBeInTheDocument();
+
+    // After ~1s delay, internal React Router navigation to / occurs.
+    await waitFor(() => expect(screen.getByText("home page")).toBeInTheDocument(), {
+      timeout: 3000,
+    });
+  }, 6000);
+
+  it("stays on /account when the update fails", async () => {
+    updateOwnProfile.mockResolvedValue({ profile: null, error: "profile.saveFailed" });
+    const user = userEvent.setup();
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/enregistrer/i);
+    expect(screen.queryByText("home page")).not.toBeInTheDocument();
+  });
+
+  it("does not redirect before the successful update is confirmed", async () => {
+    // Keep the update promise pending forever so the DB never "confirms".
+    updateOwnProfile.mockReturnValue(new Promise(() => {}));
+    const user = userEvent.setup();
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
+
+    // While the update promise is still pending (not yet confirmed),
+    // the 1s redirect timer is never scheduled, so navigation never occurs.
+    // Give it more than the redirect delay to prove no early navigation happens.
+    await new Promise((r) => setTimeout(r, 1200));
+    expect(screen.queryByText("home page")).not.toBeInTheDocument();
+    // Still on the account page: the account heading is present.
+    expect(screen.getByRole("heading", { name: /Mon compte/i })).toBeInTheDocument();
+  }, 6000);
 });
