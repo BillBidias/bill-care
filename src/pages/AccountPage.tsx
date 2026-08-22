@@ -27,6 +27,7 @@ const languageOptions: { value: PreferredLanguage; label: string }[] = [
 
 const AccountPage = () => {
   const tr = useTr();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
