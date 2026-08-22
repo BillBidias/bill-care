@@ -51,14 +51,14 @@ declare
 begin
   select count(*) into v_own_orders
   from public.orders
-  where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid;
   if v_own_orders <> 1 then
     raise exception 'P12 TEST FAILED: User A must see exactly 1 own order, saw %', v_own_orders;
   end if;
 
   select count(*) into v_other_orders
   from public.orders
-  where user_id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  where user_id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid;
   if v_other_orders <> 0 then
     raise exception 'P12 TEST FAILED: User A must not see User B orders, saw %', v_other_orders;
   end if;
