@@ -182,6 +182,7 @@ describe("/account", () => {
   }, 6000);
 
   it("stays on /account when the update fails", async () => {
+    updateOwnProfile.mockResolvedValue({ profile: null, error: "profile.saveFailed" });
     const user = userEvent.setup();
     renderAccount();
     await screen.findByDisplayValue("Bill");
