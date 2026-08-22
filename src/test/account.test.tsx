@@ -56,6 +56,7 @@ const renderAccount = () =>
       <CartProvider>
         <MemoryRouter initialEntries={["/account"]}>
           <Routes>
+            <Route path="/" element={<div>home page</div>} />
             <Route path="/login" element={<div>login page</div>} />
             <Route
               path="/account"
