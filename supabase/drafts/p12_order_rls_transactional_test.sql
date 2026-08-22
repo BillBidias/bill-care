@@ -24,10 +24,10 @@ values
 -- 2. Controlled orders, one per user. Uses an existing programme id.
 with programme as (select id, title, price_amount, currency from public.programmes order by id limit 1)
 insert into public.orders (id, user_id, status, total_amount, currency)
-select 'a0000000-0000-4000-8000-000000000001', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+select 'a0000000-0000-4000-8000-000000000001'::uuid, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid,
        'pending', p.price_amount, p.currency from programme p
 union all
-select 'b0000000-0000-4000-8000-000000000002', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+select 'b0000000-0000-4000-8000-000000000002'::uuid, 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid,
        'pending', p.price_amount, p.currency from programme p;
 
 insert into public.order_items (order_id, programme_id, programme_title, unit_amount, currency)
