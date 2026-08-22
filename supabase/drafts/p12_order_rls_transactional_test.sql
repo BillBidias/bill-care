@@ -39,7 +39,7 @@ where o.id in ('a0000000-0000-4000-8000-000000000001'::uuid,
 
 -- 3. Simulate authenticated User A.
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}'; -- sub value already a JSON string; uuid cast applied at comparison sites below
 
 -- 4. READ assertions — self-validating, executed as role authenticated.
 do $$
