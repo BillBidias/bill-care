@@ -196,6 +196,8 @@ describe("/account", () => {
   it("does not redirect before the successful update is confirmed", async () => {
     vi.useFakeTimers();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    // Keep the update promise pending forever so the DB never "confirms".
+    updateOwnProfile.mockReturnValue(new Promise(() => {}));
     renderAccount();
     await screen.findByDisplayValue("Bill");
     await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
