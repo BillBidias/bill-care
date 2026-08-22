@@ -16,30 +16,30 @@ begin;
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password,
                         created_at, updated_at)
 values
-  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000000',
+  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, '00000000-0000-0000-0000-000000000000'::uuid,
    'authenticated', 'authenticated', 'p12-test-a@example.invalid', '', now(), now()),
-  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', '00000000-0000-0000-0000-000000000000',
+  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid, '00000000-0000-0000-0000-000000000000'::uuid,
    'authenticated', 'authenticated', 'p12-test-b@example.invalid', '', now(), now());
 
 -- 2. Controlled orders, one per user. Uses an existing programme id.
 with programme as (select id, title, price_amount, currency from public.programmes order by id limit 1)
 insert into public.orders (id, user_id, status, total_amount, currency)
-select 'a0000000-0000-4000-8000-000000000001', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+select 'a0000000-0000-4000-8000-000000000001'::uuid, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid,
        'pending', p.price_amount, p.currency from programme p
 union all
-select 'b0000000-0000-4000-8000-000000000002', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+select 'b0000000-0000-4000-8000-000000000002'::uuid, 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid,
        'pending', p.price_amount, p.currency from programme p;
 
 insert into public.order_items (order_id, programme_id, programme_title, unit_amount, currency)
 select o.id, p.id, p.title, p.price_amount, p.currency
 from public.orders o
 cross join (select id, title, price_amount, currency from public.programmes order by id limit 1) p
-where o.id in ('a0000000-0000-4000-8000-000000000001',
-               'b0000000-0000-4000-8000-000000000002');
+where o.id in ('a0000000-0000-4000-8000-000000000001'::uuid,
+               'b0000000-0000-4000-8000-000000000002'::uuid);
 
 -- 3. Simulate authenticated User A.
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+set local request.jwt.claims = '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}'; -- sub value already a JSON string; uuid cast applied at comparison sites below
 
 -- 4. READ assertions — self-validating, executed as role authenticated.
 do $$
@@ -51,14 +51,14 @@ declare
 begin
   select count(*) into v_own_orders
   from public.orders
-  where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid;
   if v_own_orders <> 1 then
     raise exception 'P12 TEST FAILED: User A must see exactly 1 own order, saw %', v_own_orders;
   end if;
 
   select count(*) into v_other_orders
   from public.orders
-  where user_id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  where user_id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid;
   if v_other_orders <> 0 then
     raise exception 'P12 TEST FAILED: User A must not see User B orders, saw %', v_other_orders;
   end if;
@@ -70,7 +70,7 @@ begin
 
   select count(*) into v_other_items
   from public.order_items
-  where order_id = 'b0000000-0000-4000-8000-000000000002';
+  where order_id = 'b0000000-0000-4000-8000-000000000002'::uuid;
   if v_other_items <> 0 then
     raise exception 'P12 TEST FAILED: User A must not see User B order_items, saw %', v_other_items;
   end if;
@@ -92,7 +92,7 @@ begin
   v_op := 'orders INSERT';
   begin
     insert into public.orders (user_id, total_amount, currency)
-    values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 0, 'EUR');
+    values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid, 0, 'EUR');
     raise exception 'P12 TEST FAILED: % unexpectedly succeeded', v_op;
   exception
     when insufficient_privilege then
@@ -104,7 +104,7 @@ begin
   begin
     update public.orders
        set status = 'paid'
-     where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+     where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid;
     raise exception 'P12 TEST FAILED: % unexpectedly succeeded', v_op;
   exception
     when insufficient_privilege then
@@ -115,7 +115,7 @@ begin
   v_op := 'orders DELETE';
   begin
     delete from public.orders
-     where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+     where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid;
     raise exception 'P12 TEST FAILED: % unexpectedly succeeded', v_op;
   exception
     when insufficient_privilege then
@@ -127,7 +127,7 @@ begin
   begin
     insert into public.order_items (order_id, programme_id, programme_title,
                                     unit_amount, currency)
-    select 'a0000000-0000-4000-8000-000000000001', p.id,
+    select 'a0000000-0000-4000-8000-000000000001'::uuid, p.id,
            '{"fr":"x","en":"x","de":"x"}'::jsonb, 0, 'EUR'
     from public.programmes p order by p.id limit 1;
     raise exception 'P12 TEST FAILED: % unexpectedly succeeded', v_op;
