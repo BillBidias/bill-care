@@ -204,7 +204,7 @@ describe("/account", () => {
     // Give it more than the redirect delay to prove no early navigation happens.
     await new Promise((r) => setTimeout(r, 1200));
     expect(screen.queryByText("home page")).not.toBeInTheDocument();
-    // Still on the account page: the form button is present.
-    expect(screen.getByRole("button", { name: /Enregistrer/i })).toBeInTheDocument();
+    // Still on the account page: the account heading is present.
+    expect(screen.getByRole("heading", { name: /Mon compte/i })).toBeInTheDocument();
   }, 6000);
 });
