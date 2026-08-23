@@ -20,6 +20,11 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const logoutLabel = tr({ fr: "Se déconnecter", en: "Log out", de: "Abmelden" });
   const accountLabel = tr({ fr: "Mon compte", en: "My account", de: "Mein Konto" });
+  const cartLabel = tr({
+    fr: `Panier (${itemCount} programme${itemCount === 1 ? "" : "s"})`,
+    en: `Cart (${itemCount} programme${itemCount === 1 ? "" : "s"})`,
+    de: `Warenkorb (${itemCount} Programm${itemCount === 1 ? "" : "e"})`,
+  });
 
 
   const links = [
@@ -43,7 +48,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden lg:flex items-center gap-3">
-          <Link to="/cart" aria-label="Panier" className="relative p-2 rounded-full border border-border hover:text-primary transition-colors">
+          <Link to="/cart" aria-label={cartLabel} className="relative p-2 rounded-full border border-border hover:text-primary transition-colors">
             <ShoppingCart className="w-4 h-4" />
             {itemCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary text-[10px] font-body font-bold text-primary-foreground flex items-center justify-center">
@@ -111,6 +116,14 @@ const Navbar = () => {
               {accountLabel}
             </Link>
           )}
+
+          <Link to="/cart" onClick={() => setOpen(false)} aria-label={cartLabel} className="flex items-center gap-2 py-2 text-sm font-medium text-muted-foreground hover:text-primary">
+            <ShoppingCart className="w-4 h-4" aria-hidden="true" />
+            {tr({ fr: "Panier", en: "Cart", de: "Warenkorb" })}
+            {itemCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-primary text-[10px] font-body font-bold text-primary-foreground flex items-center justify-center">{itemCount}</span>
+            )}
+          </Link>
 
           <div className="flex items-center gap-2 mt-3">
             {langs.map((l) => (

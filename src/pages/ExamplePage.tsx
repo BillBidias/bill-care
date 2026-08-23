@@ -199,7 +199,7 @@ const ExamplePage = () => {
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const toggleExpand = (id: number) => setExpandedId(expandedId === id ? null : id);
-  const { addItem } = useCart();
+  const { addProgramme, has } = useCart();
 
   return (
     <div className="min-h-screen">
@@ -318,20 +318,16 @@ const ExamplePage = () => {
                           className="rounded-full font-body"
                           onClick={(e) => {
                             e.stopPropagation();
-                            addItem({
-                              id: program.id,
-                              title: program.title,
-                              price: program.price,
-                              image: program.image,
-                              region: program.region,
-                            });
+                            addProgramme(program.id);
                             toast({
                               title: tr({ fr: "Ajouté au panier", en: "Added to cart", de: "In den Warenkorb" }),
                               description: tr(program.title),
                             });
                           }}
                         >
-                          {tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
+                          {has(program.id)
+                            ? tr({ fr: "Dans le panier", en: "In cart", de: "Im Warenkorb" })
+                            : tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
                         </Button>
                       </div>
                     </div>

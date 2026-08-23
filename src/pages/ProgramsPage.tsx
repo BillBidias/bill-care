@@ -9,6 +9,7 @@ import { Search, Clock, BarChart3, FileSearch, PlayCircle, Lock } from "lucide-r
 import { type Program } from "@/data/programs";
 import type { ProgramCategoryKey } from "@/data/categories";
 import { useCatalogue } from "@/hooks/useCatalogue";
+import { useCart } from "@/lib/cart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 
@@ -19,6 +20,7 @@ const ProgramsPage = () => {
   const [selectedCat, setSelectedCat] = useState<ProgramCategoryKey | null>(null);
   const [search, setSearch] = useState("");
   const [openProgram, setOpenProgram] = useState<Program | null>(null);
+  const { addProgramme, has } = useCart();
 
   const orderedCategories = categoryKeys
     .map((key) => t.categories.items.find((c) => c.key === key))
@@ -144,7 +146,7 @@ const ProgramsPage = () => {
                       <FileSearch className="w-3 h-3" /> {program.icd10}
                     </a>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <span className="text-lg font-heading font-bold text-primary">{program.price}€</span>
                     <Button
                       size="sm"
@@ -152,6 +154,20 @@ const ProgramsPage = () => {
                       onClick={(e) => { e.stopPropagation(); setOpenProgram(program); }}
                     >
                       {tr({ fr: "Voir", en: "View", de: "Ansehen" })}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full text-xs font-body"
+                      disabled={has(program.id)}
+                      aria-label={has(program.id)
+                        ? tr({ fr: `${tr(program.title)} est dans le panier`, en: `${tr(program.title)} is in cart`, de: `${tr(program.title)} ist im Warenkorb` })
+                        : tr({ fr: `Ajouter ${tr(program.title)} au panier`, en: `Add ${tr(program.title)} to cart`, de: `${tr(program.title)} in den Warenkorb legen` })}
+                      onClick={(e) => { e.stopPropagation(); addProgramme(program.id); }}
+                    >
+                      {has(program.id)
+                        ? tr({ fr: "Dans le panier", en: "In cart", de: "Im Warenkorb" })
+                        : tr({ fr: "Ajouter", en: "Add", de: "Hinzufügen" })}
                     </Button>
                   </div>
                 </div>
@@ -214,10 +230,17 @@ const ProgramsPage = () => {
 
               <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
                 <span className="text-2xl font-heading font-bold text-primary">{openProgram.price}€</span>
-                <Button className="rounded-full font-body">
-                  {tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
+                <Button
+                  className="rounded-full font-body"
+                  disabled={has(openProgram.id)}
+                  onClick={() => addProgramme(openProgram.id)}
+                >
+                  {has(openProgram.id)
+                    ? tr({ fr: "Dans le panier", en: "In cart", de: "Im Warenkorb" })
+                    : tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
                 </Button>
               </div>
+
             </>
           )}
         </DialogContent>
