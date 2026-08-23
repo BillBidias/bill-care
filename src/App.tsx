@@ -14,6 +14,7 @@ import ExamplePage from "./pages/ExamplePage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import AccountPage from "./pages/AccountPage.tsx";
+import CartPage from "./pages/CartPage.tsx";
 import RequireAuth from "@/auth/RequireAuth";
 
 
@@ -31,6 +32,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/programs" element={<ProgramsPage />} />
+            <Route path="/cart" element={<CartPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/example" element={<ExamplePage />} />
             <Route path="/login" element={<LoginPage />} />
