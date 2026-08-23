@@ -164,14 +164,18 @@ describe("cart page", () => {
     expect(window.localStorage.getItem(CART_STORAGE_KEY)).toBe("[]");
   });
 
-  it("never touches orders or order_items (no supabase writes)", async () => {
+  it("never writes to the database (no supabase client use in the cart layer)", async () => {
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify([localPrograms[0].id]));
     renderCartPage();
     await waitFor(() => expect(screen.getByText(localPrograms[0].title.fr)).toBeInTheDocument());
-    const source = [
-      ...(await import("fs")).readFileSync("src/lib/cart.tsx", "utf8"),
-    ].join("");
-    expect(source).not.toMatch(/orders|order_items|insert|upsert|delete\(/);
+    const fs = await import("fs");
+    const code = fs
+      .readFileSync("src/lib/cart.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(code).not.toMatch(/supabase/i);
+    expect(code).not.toMatch(/\.(insert|update|upsert|delete)\s*\(/);
+    expect(code).not.toMatch(/order_items|\borders\b/);
   });
 });
 
