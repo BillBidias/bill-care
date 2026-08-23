@@ -1,9 +1,23 @@
 import { Link } from "react-router-dom";
 import { useI18n, useTr } from "@/lib/i18n";
+import { useConsent } from "@/lib/consent";
 
 const Footer = () => {
   const { t } = useI18n();
   const tr = useTr();
+  const { openSettings } = useConsent();
+
+  const legalLinks = [
+    { to: "/impressum", label: tr({ fr: "Mentions légales", en: "Legal notice", de: "Impressum" }) },
+    { to: "/privacy", label: tr({ fr: "Confidentialité", en: "Privacy", de: "Datenschutz" }) },
+    { to: "/terms", label: tr({ fr: "CGV & CGU", en: "Terms", de: "AGB" }) },
+    { to: "/withdrawal", label: tr({ fr: "Rétractation", en: "Withdrawal", de: "Widerruf" }) },
+    { to: "/cookies", label: tr({ fr: "Cookies", en: "Cookies", de: "Cookies" }) },
+    {
+      to: "/medical-disclaimer",
+      label: tr({ fr: "Avertissement médical", en: "Medical disclaimer", de: "Medizinischer Hinweis" }),
+    },
+  ];
 
   return (
     <footer className="bg-forest py-12">
@@ -19,11 +33,27 @@ const Footer = () => {
             <Link to="/blog" className="text-sm text-primary-foreground/70 hover:text-primary-foreground font-body">{tr(t.nav.blog)}</Link>
             <Link to="/contact" className="text-sm text-primary-foreground/70 hover:text-primary-foreground font-body">{tr(t.nav.contact)}</Link>
           </div>
-          <div className="flex flex-col gap-2">
-            <Link to="/legal" className="text-sm text-primary-foreground/70 hover:text-primary-foreground font-body">{tr(t.footer.legal)}</Link>
-            <Link to="/privacy" className="text-sm text-primary-foreground/70 hover:text-primary-foreground font-body">{tr(t.footer.privacy)}</Link>
-            <Link to="/terms" className="text-sm text-primary-foreground/70 hover:text-primary-foreground font-body">{tr(t.footer.terms)}</Link>
-          </div>
+          <nav
+            className="flex flex-col gap-2"
+            aria-label={tr({ fr: "Informations légales", en: "Legal information", de: "Rechtliche Hinweise" })}
+          >
+            {legalLinks.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="text-sm text-primary-foreground/70 hover:text-primary-foreground font-body"
+              >
+                {l.label}
+              </Link>
+            ))}
+            <button
+              type="button"
+              onClick={openSettings}
+              className="text-sm text-left text-primary-foreground/70 hover:text-primary-foreground font-body underline"
+            >
+              {tr({ fr: "Gérer mes cookies", en: "Cookie settings", de: "Cookie-Einstellungen" })}
+            </button>
+          </nav>
         </div>
         <div className="border-t border-primary-foreground/20 pt-6 text-center">
           <p className="text-xs text-primary-foreground/50 font-body">© {new Date().getFullYear()} Dein Digital-PHYSIO. {tr(t.footer.rights)}.</p>

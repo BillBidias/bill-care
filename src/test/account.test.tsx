@@ -41,6 +41,7 @@ import AccountPage from "@/pages/AccountPage";
 import RequireAuth, { safeReturnPath } from "@/auth/RequireAuth";
 import { I18nProvider } from "@/lib/i18n";
 import { CartProvider } from "@/lib/cart";
+import { ConsentProvider } from "@/lib/consent";
 
 const PROFILE = {
   id: "user-1",
@@ -53,7 +54,7 @@ const PROFILE = {
 const renderAccount = () =>
   render(
     <I18nProvider>
-      <CartProvider>
+      <ConsentProvider><CartProvider>
         <MemoryRouter initialEntries={["/account"]}>
           <Routes>
             <Route path="/" element={<div>home page</div>} />
@@ -68,7 +69,7 @@ const renderAccount = () =>
             />
           </Routes>
         </MemoryRouter>
-      </CartProvider>
+      </CartProvider></ConsentProvider>
     </I18nProvider>,
   );
 

@@ -8,6 +8,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import React from "react";
 
+import { ConsentProvider } from "@/lib/consent";
 import { CartProvider, useCart, readStoredCart, CART_STORAGE_KEY } from "@/lib/cart";
 import { I18nProvider } from "@/lib/i18n";
 import { programs as localPrograms } from "@/data/programs";
@@ -50,22 +51,22 @@ const Harness = () => {
 
 const renderHarness = () =>
   render(
-    <CartProvider>
+    <ConsentProvider><CartProvider>
       <Harness />
-    </CartProvider>,
+    </CartProvider></ConsentProvider>,
   );
 
 const renderCartPage = () =>
   render(
     <I18nProvider>
-      <CartProvider>
+      <ConsentProvider><CartProvider>
         <MemoryRouter initialEntries={["/cart"]}>
           <Routes>
             <Route path="/cart" element={<CartPage />} />
             <Route path="/programs" element={<div>programs page</div>} />
           </Routes>
         </MemoryRouter>
-      </CartProvider>
+      </CartProvider></ConsentProvider>
     </I18nProvider>,
   );
 
@@ -185,11 +186,11 @@ describe("navbar badge", () => {
   const renderNavbar = () =>
     render(
       <I18nProvider>
-        <CartProvider>
+        <ConsentProvider><CartProvider>
           <MemoryRouter>
             <Navbar />
           </MemoryRouter>
-        </CartProvider>
+        </CartProvider></ConsentProvider>
       </I18nProvider>,
     );
 
