@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { CartProvider } from "@/lib/cart";
+import { ConsentProvider } from "@/lib/consent";
+import ConsentBanner from "@/components/ConsentBanner";
 import { AuthProvider } from "@/auth/AuthProvider";
 import Index from "./pages/Index.tsx";
 import ProgramsPage from "./pages/ProgramsPage.tsx";
@@ -15,6 +17,12 @@ import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import AccountPage from "./pages/AccountPage.tsx";
 import CartPage from "./pages/CartPage.tsx";
+import ImpressumPage from "./pages/ImpressumPage.tsx";
+import PrivacyPage from "./pages/PrivacyPage.tsx";
+import TermsPage from "./pages/TermsPage.tsx";
+import WithdrawalPage from "./pages/WithdrawalPage.tsx";
+import CookiesPage from "./pages/CookiesPage.tsx";
+import MedicalDisclaimerPage from "./pages/MedicalDisclaimerPage.tsx";
 import RequireAuth from "@/auth/RequireAuth";
 
 
@@ -27,6 +35,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AuthProvider>
+        <ConsentProvider>
         <CartProvider>
         <BrowserRouter>
           <Routes>
@@ -37,6 +46,12 @@ const App = () => (
             <Route path="/example" element={<ExamplePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/impressum" element={<ImpressumPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/withdrawal" element={<WithdrawalPage />} />
+            <Route path="/cookies" element={<CookiesPage />} />
+            <Route path="/medical-disclaimer" element={<MedicalDisclaimerPage />} />
             <Route
               path="/account"
               element={
@@ -48,8 +63,10 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <ConsentBanner />
         </BrowserRouter>
         </CartProvider>
+        </ConsentProvider>
         </AuthProvider>
       </TooltipProvider>
     </I18nProvider>
