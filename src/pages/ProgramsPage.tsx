@@ -214,10 +214,17 @@ const ProgramsPage = () => {
 
               <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
                 <span className="text-2xl font-heading font-bold text-primary">{openProgram.price}€</span>
-                <Button className="rounded-full font-body">
-                  {tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
+                <Button
+                  className="rounded-full font-body"
+                  disabled={has(openProgram.id)}
+                  onClick={() => addProgramme(openProgram.id)}
+                >
+                  {has(openProgram.id)
+                    ? tr({ fr: "Dans le panier", en: "In cart", de: "Im Warenkorb" })
+                    : tr({ fr: "Ajouter au panier", en: "Add to cart", de: "In den Warenkorb" })}
                 </Button>
               </div>
+
             </>
           )}
         </DialogContent>
