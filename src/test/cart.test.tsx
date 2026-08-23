@@ -134,7 +134,9 @@ describe("cart page", () => {
   it("shows a localized empty state with a CTA to /programs", () => {
     renderCartPage();
     expect(screen.getByText("Votre panier est vide")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /programmes/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Découvrir les programmes" }),
+    ).toHaveAttribute("href", "/programs");
   });
 
   it("derives titles and display subtotal from the catalogue, not storage", async () => {
