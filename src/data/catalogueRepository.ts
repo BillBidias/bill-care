@@ -75,11 +75,15 @@ export function mapProgrammeRow(row: ProgrammeRow): Program {
   }
   const price = Number(row.price_amount);
   if (!Number.isFinite(price) || price < 0) throw new Error(`Invalid price_amount for programme ${id}`);
-  const strings = { duration: row.duration, level: row.level, image: row.image, icd10: row.icd10 };
-  for (const [field, value] of Object.entries(strings)) {
+
+  const requiredStrings = { duration: row.duration, level: row.level, image: row.image };
+  for (const [field, value] of Object.entries(requiredStrings)) {
     if (typeof value !== "string" || value.length === 0) {
       throw new Error(`Invalid ${field} for programme ${id}`);
     }
+  }
+  if (row.icd10 !== null && (typeof row.icd10 !== "string" || row.icd10.length === 0)) {
+    throw new Error(`Invalid icd10 for programme ${id}`);
   }
 
   return {
@@ -88,10 +92,10 @@ export function mapProgrammeRow(row: ProgrammeRow): Program {
     region: toLocalizedText(row.region),
     title: toLocalizedText(row.title),
     price: centsToEuros(price),
-    duration: strings.duration as string,
-    level: strings.level as string,
-    image: strings.image as string,
-    icd10: strings.icd10 as string,
+    duration: requiredStrings.duration as string,
+    level: requiredStrings.level as string,
+    image: requiredStrings.image as string,
+    icd10: row.icd10 as string | null,
   };
 }
 
