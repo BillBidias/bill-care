@@ -11,7 +11,14 @@ import { useAuth } from "@/auth/useAuth";
 import { validateLogin, type FieldErrors } from "@/auth/validation";
 import { authMessage } from "@/auth/messages";
 
-const SAFE_RETURN_PATHS = new Set(["/account", "/admin"]);
+const SAFE_RETURN_PATHS = new Set(["/account", "/admin", "/patient"]);
+
+function safeLoginReturnPath(path: string | null): string {
+  if (!path) return "/patient";
+  if (SAFE_RETURN_PATHS.has(path)) return path;
+  if (path.startsWith("/patient/session/")) return path;
+  return "/patient";
+}
 
 const LoginPage = () => {
   const tr = useTr();
@@ -40,8 +47,7 @@ const LoginPage = () => {
       return;
     }
 
-    const requestedPath = searchParams.get("from");
-    navigate(requestedPath && SAFE_RETURN_PATHS.has(requestedPath) ? requestedPath : "/");
+    navigate(safeLoginReturnPath(searchParams.get("from")));
   };
 
   return (
