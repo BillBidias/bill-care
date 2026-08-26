@@ -16,6 +16,8 @@ import ExamplePage from "./pages/ExamplePage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import AccountPage from "./pages/AccountPage.tsx";
+import PatientHomePage from "./pages/PatientHomePage.tsx";
+import PatientSessionPlaceholderPage from "./pages/PatientSessionPlaceholderPage.tsx";
 import CartPage from "./pages/CartPage.tsx";
 import AdminDashboardPage from "./pages/AdminDashboardPage.tsx";
 import ImpressumPage from "./pages/ImpressumPage.tsx";
@@ -53,6 +55,22 @@ const App = () => (
                   <Route path="/withdrawal" element={<WithdrawalPage />} />
                   <Route path="/cookies" element={<CookiesPage />} />
                   <Route path="/medical-disclaimer" element={<MedicalDisclaimerPage />} />
+                  <Route
+                    path="/patient"
+                    element={
+                      <RequireAuth>
+                        <PatientHomePage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/patient/session/:enrollmentId"
+                    element={
+                      <RequireAuth>
+                        <PatientSessionPlaceholderPage />
+                      </RequireAuth>
+                    }
+                  />
                   <Route
                     path="/account"
                     element={
