@@ -17,6 +17,7 @@ import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import AccountPage from "./pages/AccountPage.tsx";
 import CartPage from "./pages/CartPage.tsx";
+import AdminDashboardPage from "./pages/AdminDashboardPage.tsx";
 import ImpressumPage from "./pages/ImpressumPage.tsx";
 import PrivacyPage from "./pages/PrivacyPage.tsx";
 import TermsPage from "./pages/TermsPage.tsx";
@@ -24,7 +25,7 @@ import WithdrawalPage from "./pages/WithdrawalPage.tsx";
 import CookiesPage from "./pages/CookiesPage.tsx";
 import MedicalDisclaimerPage from "./pages/MedicalDisclaimerPage.tsx";
 import RequireAuth from "@/auth/RequireAuth";
-
+import RequireAdmin from "@/auth/RequireAdmin";
 
 const queryClient = new QueryClient();
 
@@ -35,38 +36,45 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AuthProvider>
-        <ConsentProvider>
-        <CartProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/programs" element={<ProgramsPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/example" element={<ExamplePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/impressum" element={<ImpressumPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/withdrawal" element={<WithdrawalPage />} />
-            <Route path="/cookies" element={<CookiesPage />} />
-            <Route path="/medical-disclaimer" element={<MedicalDisclaimerPage />} />
-            <Route
-              path="/account"
-              element={
-                <RequireAuth>
-                  <AccountPage />
-                </RequireAuth>
-              }
-            />
-
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <ConsentBanner />
-        </BrowserRouter>
-        </CartProvider>
-        </ConsentProvider>
+          <ConsentProvider>
+            <CartProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/programs" element={<ProgramsPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/example" element={<ExamplePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/impressum" element={<ImpressumPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/withdrawal" element={<WithdrawalPage />} />
+                  <Route path="/cookies" element={<CookiesPage />} />
+                  <Route path="/medical-disclaimer" element={<MedicalDisclaimerPage />} />
+                  <Route
+                    path="/account"
+                    element={
+                      <RequireAuth>
+                        <AccountPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <RequireAdmin>
+                        <AdminDashboardPage />
+                      </RequireAdmin>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <ConsentBanner />
+              </BrowserRouter>
+            </CartProvider>
+          </ConsentProvider>
         </AuthProvider>
       </TooltipProvider>
     </I18nProvider>
