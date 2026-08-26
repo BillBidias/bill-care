@@ -19,13 +19,12 @@ const Navbar = () => {
   const { itemCount } = useCart();
   const { user, signOut } = useAuth();
   const logoutLabel = tr({ fr: "Se déconnecter", en: "Log out", de: "Abmelden" });
-  const accountLabel = tr({ fr: "Mon compte", en: "My account", de: "Mein Konto" });
+  const patientLabel = tr({ fr: "Mon espace", en: "My space", de: "Mein Bereich" });
   const cartLabel = tr({
     fr: `Panier (${itemCount} programme${itemCount === 1 ? "" : "s"})`,
     en: `Cart (${itemCount} programme${itemCount === 1 ? "" : "s"})`,
     de: `Warenkorb (${itemCount} Programm${itemCount === 1 ? "" : "e"})`,
   });
-
 
   const links = [
     { to: "/", label: tr(t.nav.home) },
@@ -71,7 +70,7 @@ const Navbar = () => {
           {user ? (
             <>
               <Button variant="ghost" size="sm" asChild>
-                <Link to="/account">{accountLabel}</Link>
+                <Link to="/patient">{patientLabel}</Link>
               </Button>
               <Button variant="outline" size="sm" onClick={() => void signOut()}>
                 {logoutLabel}
@@ -88,13 +87,11 @@ const Navbar = () => {
           </Button>
         </div>
 
-        {/* Mobile toggle */}
         <button className="lg:hidden p-2" onClick={() => setOpen(!open)}>
           {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Desktop links row */}
       <div className="hidden lg:flex container mx-auto items-center gap-6 px-4 pb-2 mt-[2px]">
         {links.map((l) => (
           <Link key={l.to} to={l.to} className="text-sm font-body font-medium text-muted-foreground hover:text-primary transition-colors">
@@ -103,7 +100,6 @@ const Navbar = () => {
         ))}
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <div className="lg:hidden bg-card border-b border-border px-4 pb-4">
           {links.map((l) => (
@@ -112,8 +108,8 @@ const Navbar = () => {
             </Link>
           ))}
           {user && (
-            <Link to="/account" onClick={() => setOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-primary">
-              {accountLabel}
+            <Link to="/patient" onClick={() => setOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-primary">
+              {patientLabel}
             </Link>
           )}
 
