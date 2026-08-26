@@ -1,5 +1,5 @@
 /**
- * P11 — UX-only route protection.
+ * P11/M12 — UX-only route protection.
  *
  * This is NOT authorization: database RLS remains the actual security boundary.
  * It only avoids rendering an authenticated screen to a signed-out visitor.
@@ -10,10 +10,12 @@ import { useAuth } from "@/auth/useAuth";
 import { useTr } from "@/lib/i18n";
 
 /** Only known internal paths may be used as a post-login return target. */
-const SAFE_RETURN_PATHS = new Set(["/account"]);
+const SAFE_RETURN_PATHS = new Set(["/account", "/patient"]);
 
 export function safeReturnPath(pathname: string): string | null {
-  return SAFE_RETURN_PATHS.has(pathname) ? pathname : null;
+  if (SAFE_RETURN_PATHS.has(pathname)) return pathname;
+  if (pathname.startsWith("/patient/session/")) return pathname;
+  return null;
 }
 
 export const RequireAuth = ({ children }: { children: ReactNode }) => {
