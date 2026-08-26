@@ -15,11 +15,12 @@ export interface Program {
   duration: string;
   level: string;
   image: string;
-  icd10: string;
+  /** Optional catalogue lookup metadata. Never treated as a patient diagnosis. */
+  icd10: string | null;
 }
 
 export const programs: Program[] = [
-  // 12 régions corporelles. icd10 = liste de codes/plages CIM-10 pertinents (recherche par code possible).
+  // 12 programmes existants. ICD-10 reste facultatif pour permettre les parcours prévention/maintien.
   { id: 1, category: "spine-back", region: { fr: "Tête & cou", en: "Head & neck", de: "Kopf & Hals" }, title: { fr: "Cervicalgies, nuque, ATM, vertiges positionnels", en: "Neck pain, TMJ, positional vertigo", de: "Nackenschmerzen, KG, Lagerungsschwindel" }, price: 44, duration: "6 sem.", level: "Débutant", image: "🧠", icd10: "M50–M54 · G54 · M53" },
   { id: 2, category: "spine-back", region: { fr: "Colonne vertébrale", en: "Spine", de: "Wirbelsäule" }, title: { fr: "Lombalgies, hernies, scoliose, coccyx, dorsalgies", en: "Low back pain, hernias, scoliosis, coccyx", de: "Rückenschmerz, Bandscheiben, Skoliose" }, price: 59, duration: "8 sem.", level: "Intermédiaire", image: "🦴", icd10: "M40–M54 · M51" },
   { id: 3, category: "shoulder-arm", region: { fr: "Épaule & bras", en: "Shoulder & arm", de: "Schulter & Arm" }, title: { fr: "Coiffe, capsulite, instabilité, biceps, post-op", en: "Rotator cuff, frozen shoulder, instability, post-op", de: "Rotatorenmanschette, Schultersteife, post-OP" }, price: 54, duration: "6 sem.", level: "Débutant", image: "💪", icd10: "M75 · M77 · G56" },
