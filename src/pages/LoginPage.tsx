@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,9 +11,12 @@ import { useAuth } from "@/auth/useAuth";
 import { validateLogin, type FieldErrors } from "@/auth/validation";
 import { authMessage } from "@/auth/messages";
 
+const SAFE_RETURN_PATHS = new Set(["/account", "/admin"]);
+
 const LoginPage = () => {
   const tr = useTr();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -36,7 +39,9 @@ const LoginPage = () => {
       setFormError(result.error);
       return;
     }
-    navigate("/");
+
+    const requestedPath = searchParams.get("from");
+    navigate(requestedPath && SAFE_RETURN_PATHS.has(requestedPath) ? requestedPath : "/");
   };
 
   return (
