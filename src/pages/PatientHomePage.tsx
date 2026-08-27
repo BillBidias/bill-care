@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n, useTr } from "@/lib/i18n";
 import { fetchPatientAppHome, type PatientHomeProgramme } from "@/data/patientHomeRepository";
 import { fetchCatalogue } from "@/data/catalogueRepository";
+import { fetchMyProgrammeProgress, type ProgrammeProgress } from "@/data/progressRepository";
 import {
   pauseProgrammeEnrollment,
   resumeProgrammeEnrollment,
@@ -20,6 +21,7 @@ const PatientHomePage = () => {
   const navigate = useNavigate();
   const [programmes, setProgrammes] = useState<PatientHomeProgramme[]>([]);
   const [programmeImages, setProgrammeImages] = useState<Record<number, string>>({});
+  const [progressByEnrollment, setProgressByEnrollment] = useState<Record<string, ProgrammeProgress>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [workingId, setWorkingId] = useState<number | null>(null);
@@ -28,9 +30,14 @@ const PatientHomePage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [home, catalogue] = await Promise.all([fetchPatientAppHome(lang), fetchCatalogue()]);
+      const [home, catalogue, progress] = await Promise.all([
+        fetchPatientAppHome(lang),
+        fetchCatalogue(),
+        fetchMyProgrammeProgress(),
+      ]);
       setProgrammes(home);
       setProgrammeImages(Object.fromEntries(catalogue.programs.map((item) => [item.id, item.image])));
+      setProgressByEnrollment(Object.fromEntries(progress.map((item) => [item.enrollmentId, item])));
     } catch (err) {
       setError(err instanceof Error ? err.message : "patient_home_load_failed");
     } finally {
@@ -133,21 +140,31 @@ const PatientHomePage = () => {
                 <section>
                   <div className="flex items-center justify-between gap-4 mb-4"><h2 className="text-2xl font-heading font-bold">{tr({ fr: "Mes programmes", en: "My programmes", de: "Meine Programme" })}</h2><span className="text-sm font-body text-muted-foreground">{programmes.length}</span></div>
                   <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {programmes.map((programme) => (
-                      <article key={programme.programmeId} className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
-                        <div className="relative aspect-[16/9] bg-muted">
-                          {programmeImages[programme.programmeId] && <img src={programmeImages[programme.programmeId]} alt="" className="w-full h-full object-cover" />}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
-                          <span className="absolute top-3 left-3 rounded-full bg-background/95 px-3 py-1 text-[11px] uppercase tracking-wide font-body font-bold text-primary">{statusLabel(programme)}</span>
-                          <span className="absolute inset-0 grid place-items-center"><span className="grid place-items-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg"><Play className="w-6 h-6 fill-current" /></span></span>
-                        </div>
-                        <div className="p-5">
-                          <div className="flex items-start justify-between gap-3"><div><h3 className="font-heading font-bold text-xl">{programme.programmeTitle}</h3><p className="text-xs font-body text-muted-foreground mt-1">{programme.entitlementType === "permanent_purchase" ? tr({ fr: "Accès permanent", en: "Permanent access", de: "Dauerhafter Zugriff" }) : tr({ fr: "Accès actif", en: "Active access", de: "Aktiver Zugriff" })}</p></div><CheckCircle2 className="w-5 h-5 text-primary shrink-0" /></div>
-                          {(programme.currentPhaseTitle || programme.currentSessionTitle) && <div className="mt-4 rounded-xl bg-muted/50 p-3">{programme.currentPhaseTitle && <p className="text-xs text-muted-foreground font-body">{programme.currentPhaseTitle}</p>}{programme.currentSessionTitle && <p className="text-sm font-body font-semibold mt-1">{programme.currentSessionTitle}</p>}</div>}
-                          <div className="flex flex-wrap gap-2 mt-4"><Button disabled={programme.todayAction === "content_not_ready" || workingId === programme.programmeId} onClick={() => void runAction(programme)}>{programme.todayAction === "resume_programme" ? <RotateCcw className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}{actionLabel(programme)}</Button>{programme.enrollmentStatus === "active" && programme.enrollmentId && <Button variant="outline" disabled={workingId === programme.programmeId} onClick={() => void pause(programme)}><Pause className="w-4 h-4 mr-2" />{tr({ fr: "Pause", en: "Pause", de: "Pause" })}</Button>}</div>
-                        </div>
-                      </article>
-                    ))}
+                    {programmes.map((programme) => {
+                      const progress = programme.enrollmentId ? progressByEnrollment[programme.enrollmentId] : undefined;
+                      const percent = progress?.progressPercent ?? 0;
+                      return (
+                        <article key={programme.programmeId} className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+                          <div className="relative aspect-[16/9] bg-muted">
+                            {programmeImages[programme.programmeId] && <img src={programmeImages[programme.programmeId]} alt="" className="w-full h-full object-cover" />}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+                            <span className="absolute top-3 left-3 rounded-full bg-background/95 px-3 py-1 text-[11px] uppercase tracking-wide font-body font-bold text-primary">{statusLabel(programme)}</span>
+                            <span className="absolute inset-0 grid place-items-center"><span className="grid place-items-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg"><Play className="w-6 h-6 fill-current" /></span></span>
+                          </div>
+                          <div className="p-5">
+                            <div className="flex items-start justify-between gap-3"><div><h3 className="font-heading font-bold text-xl">{programme.programmeTitle}</h3><p className="text-xs font-body text-muted-foreground mt-1">{programme.entitlementType === "permanent_purchase" ? tr({ fr: "Accès permanent", en: "Permanent access", de: "Dauerhafter Zugriff" }) : tr({ fr: "Accès actif", en: "Active access", de: "Aktiver Zugriff" })}</p></div><CheckCircle2 className="w-5 h-5 text-primary shrink-0" /></div>
+                            {(programme.currentPhaseTitle || programme.currentSessionTitle) && <div className="mt-4 rounded-xl bg-muted/50 p-3">{programme.currentPhaseTitle && <p className="text-xs text-muted-foreground font-body">{programme.currentPhaseTitle}</p>}{programme.currentSessionTitle && <p className="text-sm font-body font-semibold mt-1">{programme.currentSessionTitle}</p>}</div>}
+                            {programme.enrollmentId && (
+                              <div className="mt-4" aria-label={`${percent}%`}>
+                                <div className="flex items-center justify-between gap-3 text-xs font-body mb-1.5"><span className="text-muted-foreground">{progress ? `${progress.completedSessions}/${progress.totalSessions} ${tr({ fr: "séances", en: "sessions", de: "Sitzungen" })}` : tr({ fr: "Progression", en: "Progress", de: "Fortschritt" })}</span><strong>{percent}%</strong></div>
+                                <div className="h-2 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percent}%` }} /></div>
+                              </div>
+                            )}
+                            <div className="flex flex-wrap gap-2 mt-4"><Button disabled={programme.todayAction === "content_not_ready" || workingId === programme.programmeId} onClick={() => void runAction(programme)}>{programme.todayAction === "resume_programme" ? <RotateCcw className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}{actionLabel(programme)}</Button>{programme.enrollmentStatus === "active" && programme.enrollmentId && <Button variant="outline" disabled={workingId === programme.programmeId} onClick={() => void pause(programme)}><Pause className="w-4 h-4 mr-2" />{tr({ fr: "Pause", en: "Pause", de: "Pause" })}</Button>}</div>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 </section>
               </>
