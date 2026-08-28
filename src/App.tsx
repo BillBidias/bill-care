@@ -19,6 +19,7 @@ import AccountPage from "./pages/AccountPage.tsx";
 import PatientHomePage from "./pages/PatientHomePage.tsx";
 import PatientSessionPlaceholderPage from "./pages/PatientSessionPlaceholderPage.tsx";
 import CartPage from "./pages/CartPage.tsx";
+import CheckoutSuccessPage from "./pages/CheckoutSuccessPage.tsx";
 import AdminDashboardPage from "./pages/AdminDashboardPage.tsx";
 import ImpressumPage from "./pages/ImpressumPage.tsx";
 import PrivacyPage from "./pages/PrivacyPage.tsx";
@@ -56,38 +57,11 @@ const App = () => (
                   <Route path="/withdrawal" element={<WithdrawalPage />} />
                   <Route path="/cookies" element={<CookiesPage />} />
                   <Route path="/medical-disclaimer" element={<MedicalDisclaimerPage />} />
-                  <Route
-                    path="/patient"
-                    element={
-                      <RequireAuth>
-                        <PatientHomePage />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/patient/session/:enrollmentId"
-                    element={
-                      <RequireAuth>
-                        <PatientSessionPlaceholderPage />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/account"
-                    element={
-                      <RequireAuth>
-                        <AccountPage />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/admin"
-                    element={
-                      <RequireAdmin>
-                        <AdminDashboardPage />
-                      </RequireAdmin>
-                    }
-                  />
+                  <Route path="/checkout/success" element={<RequireAuth><CheckoutSuccessPage /></RequireAuth>} />
+                  <Route path="/patient" element={<RequireAuth><PatientHomePage /></RequireAuth>} />
+                  <Route path="/patient/session/:enrollmentId" element={<RequireAuth><PatientSessionPlaceholderPage /></RequireAuth>} />
+                  <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
+                  <Route path="/admin" element={<RequireAdmin><AdminDashboardPage /></RequireAdmin>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
                 <ConsentBanner />
