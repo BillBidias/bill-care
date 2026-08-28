@@ -372,7 +372,12 @@ const ProgramFinderPage = () => {
                               <div className="flex items-center justify-between gap-3">
                                 <span className="font-heading font-bold text-primary text-xl">{program.price} €</span>
                                 <Button asChild variant="outline" className="rounded-full">
-                                  <Link to={`/programs?program=${program.id}`}>{tr({ fr: "Voir le programme", en: "View programme", de: "Programm ansehen" })}</Link>
+                                  <Link
+                                    to={`/programs?program=${program.id}`}
+                                    state={{ finderProgrammeId: program.id }}
+                                  >
+                                    {tr({ fr: "Voir le programme", en: "View programme", de: "Programm ansehen" })}
+                                  </Link>
                                 </Button>
                               </div>
                             </div>
