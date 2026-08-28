@@ -8,6 +8,13 @@ export interface StripeCheckoutSession {
   currency: string;
 }
 
+export interface CheckoutOrderStatus {
+  id: string;
+  status: "pending" | "paid" | "cancelled" | "refunded";
+  totalAmount: number;
+  currency: string;
+}
+
 export type PaymentStartErrorCode =
   | "authentication_required"
   | "payment_provider_not_configured"
@@ -98,4 +105,47 @@ export function redirectToStripeCheckout(session: StripeCheckoutSession): void {
     throw new PaymentStartError("unknown", "Untrusted payment redirect URL.");
   }
   window.location.assign(url.toString());
+}
+
+/** Reads only the authenticated user's own order through existing RLS. */
+export async function fetchOwnOrderStatus(orderId: string): Promise<CheckoutOrderStatus | null> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error("Supabase is not configured.");
+
+  const { data, error } = await client
+    .from("orders")
+    .select("id,status,total_amount,currency")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+
+  const status = String(data.status) as CheckoutOrderStatus["status"];
+  if (!["pending", "paid", "cancelled", "refunded"].includes(status)) {
+    throw new Error("Invalid order status.");
+  }
+
+  return {
+    id: String(data.id),
+    status,
+    totalAmount: Number(data.total_amount),
+    currency: String(data.currency),
+  };
+}
+
+/** Resolves a Stripe session to the authenticated user's own order via payment_attempt RLS. */
+export async function findOwnOrderByStripeSession(sessionId: string): Promise<CheckoutOrderStatus | null> {
+  const client = getSupabaseClient();
+  if (!client) throw new Error("Supabase is not configured.");
+
+  const { data: attempt, error: attemptError } = await client
+    .from("payment_attempts")
+    .select("order_id")
+    .eq("provider_checkout_session_id", sessionId)
+    .maybeSingle();
+
+  if (attemptError) throw new Error(attemptError.message);
+  if (!attempt?.order_id) return null;
+  return fetchOwnOrderStatus(String(attempt.order_id));
 }
