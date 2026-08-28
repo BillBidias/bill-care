@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18n, useTr } from "@/lib/i18n";
-import { Search, Clock, BarChart3, FileSearch, ClipboardCheck, ShieldCheck } from "lucide-react";
+import { Search, Clock, BarChart3, FileSearch, ClipboardCheck, CheckCircle2, Target, Info, ShieldAlert } from "lucide-react";
 import { type Program } from "@/data/programs";
 import type { ProgramCategoryKey } from "@/data/categories";
 import { useCatalogue } from "@/hooks/useCatalogue";
@@ -14,7 +14,7 @@ import { useCart } from "@/lib/cart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const ProgramsPage = () => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const tr = useTr();
   const { programs: catalogue, categoryKeys, loading } = useCatalogue();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,6 +29,10 @@ const ProgramsPage = () => {
     const id = Number(raw);
     return Number.isInteger(id) && id > 0 ? id : null;
   }, [searchParams]);
+
+  // A programme query parameter is currently used by the Program Finder deep-link.
+  // It contains only the catalogue programme id; no symptom, ICD answer or safety answer is persisted here.
+  const openedFromGuidedSelection = requestedProgrammeId !== null;
 
   useEffect(() => {
     if (loading || requestedProgrammeId === null) return;
@@ -50,6 +54,29 @@ const ProgramsPage = () => {
     const next = new URLSearchParams(searchParams);
     next.set("program", String(program.id));
     setSearchParams(next, { replace: true });
+  };
+
+  const localizeDuration = (value: string) => {
+    const weeks = value.match(/(\d+)\s*(?:sem\.?|weeks?|wks?|wo\.?)/i);
+    if (!weeks) return value;
+    const count = Number(weeks[1]);
+    if (lang === "de") return `${count} Wo.`;
+    if (lang === "en") return `${count} ${count === 1 ? "week" : "weeks"}`;
+    return `${count} sem.`;
+  };
+
+  const localizeLevel = (value: string) => {
+    const normalized = value.trim().toLowerCase();
+    if (["débutant", "debutant", "beginner", "anfänger", "anfanger"].includes(normalized)) {
+      return tr({ fr: "Débutant", en: "Beginner", de: "Anfänger" });
+    }
+    if (["intermédiaire", "intermediaire", "intermediate", "mittel", "mittelstufe"].includes(normalized)) {
+      return tr({ fr: "Intermédiaire", en: "Intermediate", de: "Mittelstufe" });
+    }
+    if (["avancé", "avance", "advanced", "fortgeschritten"].includes(normalized)) {
+      return tr({ fr: "Avancé", en: "Advanced", de: "Fortgeschritten" });
+    }
+    return value;
   };
 
   const orderedCategories = categoryKeys
@@ -144,9 +171,8 @@ const ProgramsPage = () => {
                   <p className="text-[10px] uppercase tracking-wider font-body font-semibold text-primary/80 mb-1">{tr(program.region)}</p>
                   <h3 className="font-body font-semibold text-sm mb-2 line-clamp-2">{tr(program.title)}</h3>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground font-body mb-3 flex-wrap">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {program.duration}</span>
-                    <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {program.level}</span>
-                    {program.icd10 && <span className="flex items-center gap-1"><FileSearch className="w-3 h-3" /> {program.icd10}</span>}
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {localizeDuration(program.duration)}</span>
+                    <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {localizeLevel(program.level)}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <span className="text-lg font-heading font-bold text-primary">{program.price}€</span>
@@ -180,60 +206,124 @@ const ProgramsPage = () => {
       </div>
 
       <Dialog open={!!openProgram} onOpenChange={(open) => !open && closeProgram()}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto">
           {openProgram && (
             <>
               <DialogHeader>
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-4xl mb-3" aria-hidden="true">
-                  {openProgram.image}
-                </div>
-                <p className="text-[10px] uppercase tracking-wider font-body font-semibold text-primary/80">
-                  {tr(openProgram.region)}
-                </p>
-                <DialogTitle className="font-heading text-2xl">{tr(openProgram.title)}</DialogTitle>
-                <DialogDescription className="font-body flex flex-wrap items-center gap-3 pt-1">
-                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {openProgram.duration}</span>
-                  <span className="flex items-center gap-1"><BarChart3 className="w-3.5 h-3.5" /> {openProgram.level}</span>
-                  {openProgram.icd10 && <span className="flex items-center gap-1"><FileSearch className="w-3.5 h-3.5" /> ICD-10: {openProgram.icd10}</span>}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="mt-4 space-y-4">
-                <div className="rounded-2xl border border-border p-4 flex gap-3">
-                  <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-body font-semibold text-sm mb-1">
-                      {tr({ fr: "Contenu structuré et protégé", en: "Structured and protected content", de: "Strukturierter und geschützter Inhalt" })}
-                    </p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {tr({
-                        fr: "Les phases, séances et exercices réels de ce programme sont gérés par l’espace patient. Nous n’affichons plus de séances ou vidéos fictives générées à partir d’un code ICD-10.",
-                        en: "The real phases, sessions and exercises for this programme are managed in the patient area. We no longer display fictional sessions or videos generated from an ICD-10 code.",
-                        de: "Die tatsächlichen Phasen, Einheiten und Übungen dieses Programms werden im Patientenbereich verwaltet. Es werden keine fiktiven Einheiten oder Videos mehr aus einem ICD-10-Code erzeugt.",
-                      })}
+                <div className="flex items-start gap-4 mb-2">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-4xl shrink-0" aria-hidden="true">
+                    {openProgram.image}
+                  </div>
+                  <div className="min-w-0 pt-1">
+                    {openedFromGuidedSelection && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-1 text-[11px] font-semibold mb-2">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        {tr({ fr: "Programme identifié par le Program Finder", en: "Programme identified by the Program Finder", de: "Vom Program Finder ausgewähltes Programm" })}
+                      </span>
+                    )}
+                    <p className="text-[10px] uppercase tracking-wider font-body font-semibold text-primary/80">
+                      {tr(openProgram.region)}
                     </p>
                   </div>
                 </div>
+                <DialogTitle className="font-heading text-2xl md:text-3xl leading-tight">{tr(openProgram.title)}</DialogTitle>
+                <DialogDescription className="font-body flex flex-wrap items-center gap-4 pt-2">
+                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {localizeDuration(openProgram.duration)}</span>
+                  <span className="flex items-center gap-1.5"><BarChart3 className="w-4 h-4" /> {localizeLevel(openProgram.level)}</span>
+                </DialogDescription>
+              </DialogHeader>
 
-                {openProgram.icd10 && (
-                  <div className="rounded-2xl bg-secondary/60 p-4 text-sm text-muted-foreground">
-                    <strong className="text-foreground">ICD-10:</strong> {openProgram.icd10}. {tr({
-                      fr: "Cette information est une métadonnée facultative du catalogue et ne constitue pas un diagnostic du visiteur.",
-                      en: "This is optional catalogue metadata and is not a diagnosis of the visitor.",
-                      de: "Diese Angabe ist eine optionale Katalog-Metadateninformation und keine Diagnose des Besuchers.",
-                    })}
+              <div className="mt-5 space-y-4">
+                {openedFromGuidedSelection ? (
+                  <div className="rounded-2xl border border-primary/25 bg-primary/5 p-5">
+                    <div className="flex gap-3">
+                      <Target className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="font-body font-semibold mb-2">
+                          {tr({ fr: "Pourquoi ce programme est affiché", en: "Why this programme is shown", de: "Warum dieses Programm angezeigt wird" })}
+                        </h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {tr({
+                            fr: "Le Program Finder a trouvé une correspondance entre ce programme et les informations que vous venez de sélectionner. Cette orientation aide à choisir un programme pertinent, mais ne constitue pas un diagnostic médical.",
+                            en: "The Program Finder found a match between this programme and the information you just selected. This guidance helps you choose a relevant programme, but it is not a medical diagnosis.",
+                            de: "Der Program Finder hat eine Übereinstimmung zwischen diesem Programm und Ihren zuvor ausgewählten Angaben gefunden. Diese Orientierung hilft bei der Programmauswahl, stellt jedoch keine medizinische Diagnose dar.",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-border p-5">
+                    <h3 className="font-body font-semibold mb-2">
+                      {tr({ fr: "À propos de ce programme", en: "About this programme", de: "Über dieses Programm" })}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {tr({
+                        fr: "Ce programme comprend un parcours progressif de séances et d’exercices guidés. Après activation de votre accès, le contenu correspondant est disponible dans votre espace patient.",
+                        en: "This programme includes a progressive pathway of guided sessions and exercises. After your access is activated, the corresponding content is available in your patient area.",
+                        de: "Dieses Programm umfasst einen schrittweisen Ablauf mit geführten Einheiten und Übungen. Nach Aktivierung Ihres Zugangs stehen die entsprechenden Inhalte in Ihrem Patientenbereich bereit.",
+                      })}
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="rounded-2xl bg-secondary/60 p-4">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{tr({ fr: "Durée", en: "Duration", de: "Dauer" })}</p>
+                    <p className="font-body font-semibold">{localizeDuration(openProgram.duration)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-secondary/60 p-4">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{tr({ fr: "Niveau", en: "Level", de: "Niveau" })}</p>
+                    <p className="font-body font-semibold">{localizeLevel(openProgram.level)}</p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-border p-4 flex gap-3">
+                  <Info className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-body font-semibold text-sm mb-1">
+                      {tr({ fr: "Informations complémentaires", en: "Additional information", de: "Zusätzliche Informationen" })}
+                    </p>
+                    {openProgram.icd10 ? (
+                      <p className="text-sm text-muted-foreground">
+                        ICD-10 : {openProgram.icd10}. {tr({
+                          fr: "Ces codes sont des métadonnées facultatives du catalogue. Ils ne signifient pas que la plateforme vous a posé un diagnostic.",
+                          en: "These codes are optional catalogue metadata. They do not mean that the platform has diagnosed you.",
+                          de: "Diese Codes sind optionale Katalog-Metadaten. Sie bedeuten nicht, dass die Plattform bei Ihnen eine Diagnose gestellt hat.",
+                        })}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{tr({ fr: "Aucun code ICD-10 n’est requis pour consulter ce programme.", en: "No ICD-10 code is required to view this programme.", de: "Für die Ansicht dieses Programms ist kein ICD-10-Code erforderlich." })}</p>
+                    )}
+                  </div>
+                </div>
+
+                {openedFromGuidedSelection && (
+                  <div className="rounded-2xl border border-accent/40 bg-accent/5 p-4 flex gap-3">
+                    <ShieldAlert className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {tr({
+                        fr: "Respectez toujours le résultat de sécurité affiché par le Program Finder. Si un avis professionnel vous a été recommandé, ne commencez pas le programme avant cette vérification.",
+                        en: "Always follow the safety result shown by the Program Finder. If professional advice was recommended, do not start the programme before that review.",
+                        de: "Beachten Sie immer das Sicherheitsergebnis des Program Finders. Wenn eine fachliche Abklärung empfohlen wurde, beginnen Sie das Programm erst nach dieser Abklärung.",
+                      })}
+                    </p>
                   </div>
                 )}
               </div>
 
-              <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-border pt-5">
+              <div className="mt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-t border-border pt-5">
                 <div>
-                  <p className="text-xs text-muted-foreground font-body">{tr({ fr: "Accès au programme", en: "Programme access", de: "Programmzugang" })}</p>
-                  <span className="text-2xl font-heading font-bold text-primary">{openProgram.price}€</span>
+                  <p className="text-xs text-muted-foreground font-body mb-1">{tr({ fr: "Accès au programme", en: "Programme access", de: "Programmzugang" })}</p>
+                  <span className="text-3xl font-heading font-bold text-primary">{openProgram.price}€</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" className="rounded-full" asChild>
-                    <Link to="/finder">{tr({ fr: "Vérifier l’adéquation", en: "Check suitability", de: "Eignung prüfen" })}</Link>
+                    <Link to="/finder">
+                      {openedFromGuidedSelection
+                        ? tr({ fr: "Modifier mes réponses", en: "Change my answers", de: "Antworten ändern" })
+                        : tr({ fr: "Trouver mon programme", en: "Find my programme", de: "Mein Programm finden" })}
+                    </Link>
                   </Button>
                   <Button
                     className="rounded-full font-body"
