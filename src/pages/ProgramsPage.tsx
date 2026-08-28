@@ -1,21 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18n, useTr } from "@/lib/i18n";
-import { Search, Clock, BarChart3, FileSearch, ClipboardCheck, CheckCircle2, Target, Info, ShieldAlert } from "lucide-react";
+import { Search, Clock, BarChart3, ClipboardCheck, CheckCircle2, Target, Info, ShieldAlert } from "lucide-react";
 import { type Program } from "@/data/programs";
 import type { ProgramCategoryKey } from "@/data/categories";
 import { useCatalogue } from "@/hooks/useCatalogue";
 import { useCart } from "@/lib/cart";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
+type FinderNavigationState = {
+  finderProgrammeId?: number;
+};
+
 const ProgramsPage = () => {
   const { t, lang } = useI18n();
   const tr = useTr();
+  const location = useLocation();
+  const finderState = (location.state ?? null) as FinderNavigationState | null;
   const { programs: catalogue, categoryKeys, loading } = useCatalogue();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCat, setSelectedCat] = useState<ProgramCategoryKey | null>(null);
@@ -30,9 +36,11 @@ const ProgramsPage = () => {
     return Number.isInteger(id) && id > 0 ? id : null;
   }, [searchParams]);
 
-  // A programme query parameter is currently used by the Program Finder deep-link.
-  // It contains only the catalogue programme id; no symptom, ICD answer or safety answer is persisted here.
-  const openedFromGuidedSelection = requestedProgrammeId !== null;
+  // Only an ephemeral router state coming from Program Finder marks a recommendation.
+  // No symptoms, safety answers, ICD-10 input or other health answers are placed in the URL or persisted here.
+  const openedFromGuidedSelection = Boolean(
+    openProgram && finderState?.finderProgrammeId === openProgram.id,
+  );
 
   useEffect(() => {
     if (loading || requestedProgrammeId === null) return;
