@@ -10,6 +10,7 @@ import ConsentBanner from "@/components/ConsentBanner";
 import { AuthProvider } from "@/auth/AuthProvider";
 import Index from "./pages/Index.tsx";
 import ProgramsPage from "./pages/ProgramsPage.tsx";
+import ProgramFinderPage from "./pages/ProgramFinderPage.tsx";
 import AboutPage from "./pages/AboutPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
@@ -42,6 +43,8 @@ const App = () => (
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/finder" element={<ProgramFinderPage />} />
+                  <Route path="/quiz" element={<ProgramFinderPage />} />
                   <Route path="/programs" element={<ProgramsPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/about" element={<AboutPage />} />
