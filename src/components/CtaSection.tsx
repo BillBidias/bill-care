@@ -21,10 +21,14 @@ const CtaSection = () => {
             {tr(t.cta.title)}
           </h2>
           <p className="text-primary-foreground/80 font-body max-w-lg mx-auto mb-8">
-            {tr(t.cta.subtitle)}
+            {tr({
+              fr: "Décrivez simplement votre besoin, passez la vérification de sécurité et consultez les programmes potentiellement pertinents.",
+              en: "Simply describe your needs, complete the safety check and review potentially relevant programmes.",
+              de: "Beschreiben Sie einfach Ihren Bedarf, durchlaufen Sie die Sicherheitsprüfung und sehen Sie möglicherweise passende Programme an.",
+            })}
           </p>
           <Button size="lg" variant="secondary" className="rounded-full px-8 gap-2 font-body font-semibold" asChild>
-            <Link to="/programs">
+            <Link to="/finder">
               {tr(t.cta.button)} <ArrowRight className="w-4 h-4" />
             </Link>
           </Button>
