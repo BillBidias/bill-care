@@ -28,13 +28,13 @@ const Navbar = () => {
 
   const links = [
     { to: "/", label: tr(t.nav.home) },
+    { to: "/finder", label: tr({ fr: "Trouver mon programme", en: "Find my programme", de: "Mein Programm finden" }) },
     { to: "/programs", label: tr(t.nav.programs) },
     { to: "/how-it-works", label: tr(t.nav.howItWorks) },
     { to: "/about", label: tr(t.nav.about) },
     { to: "/blog", label: tr(t.nav.blog) },
     { to: "/faq", label: tr(t.nav.faq) },
     { to: "/contact", label: tr(t.nav.contact) },
-    { to: "/example", label: "Example" },
   ];
 
   return (
@@ -83,7 +83,7 @@ const Navbar = () => {
           )}
 
           <Button size="sm" asChild>
-            <Link to="/programs">{tr(t.nav.startNow)}</Link>
+            <Link to="/finder">{tr(t.nav.startNow)}</Link>
           </Button>
         </div>
 
@@ -128,7 +128,7 @@ const Navbar = () => {
           </div>
           <div className="flex gap-2 mt-3">
             {user ? (<Button variant="outline" size="sm" className="flex-1" onClick={() => { setOpen(false); void signOut(); }}>{logoutLabel}</Button>) : (<Button variant="outline" size="sm" className="flex-1" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>)}
-            <Button size="sm" className="flex-1" asChild><Link to="/programs">{tr(t.nav.startNow)}</Link></Button>
+            <Button size="sm" className="flex-1" asChild><Link to="/finder">{tr(t.nav.startNow)}</Link></Button>
           </div>
         </div>
       )}
