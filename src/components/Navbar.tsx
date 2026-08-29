@@ -54,7 +54,7 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden min-w-0 flex-1 lg:flex items-center justify-center gap-3 xl:gap-5">
-            {links.map((l) => <NavLink key={l.to} to={l.to} className="whitespace-nowrap text-[12px] xl:text-[13px] font-bold text-foreground transition-colors hover:text-foreground">{l.label}</NavLink>)}
+            {links.map((l) => <NavLink key={l.to} to={l.to} className="-mx-2 whitespace-nowrap rounded-md px-2 py-1 text-[12px] xl:text-[13px] font-bold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">{l.label}</NavLink>)}
           </div>
 
           <div className="hidden lg:flex shrink-0 items-center gap-3 ml-6">
