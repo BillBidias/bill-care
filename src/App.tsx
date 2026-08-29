@@ -32,6 +32,10 @@ import RequireAdmin from "@/auth/RequireAdmin";
 
 const queryClient = new QueryClient();
 
+const PatientV2 = ({ children }: { children: React.ReactNode }) => (
+  <div className="patient-v2">{children}</div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <I18nProvider>
@@ -58,9 +62,9 @@ const App = () => (
                   <Route path="/cookies" element={<CookiesPage />} />
                   <Route path="/medical-disclaimer" element={<MedicalDisclaimerPage />} />
                   <Route path="/checkout/success" element={<RequireAuth><CheckoutSuccessPage /></RequireAuth>} />
-                  <Route path="/patient" element={<RequireAuth><PatientHomePage /></RequireAuth>} />
-                  <Route path="/patient/session/:enrollmentId" element={<RequireAuth><PatientSessionPlaceholderPage /></RequireAuth>} />
-                  <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
+                  <Route path="/patient" element={<RequireAuth><PatientV2><PatientHomePage /></PatientV2></RequireAuth>} />
+                  <Route path="/patient/session/:enrollmentId" element={<RequireAuth><PatientV2><PatientSessionPlaceholderPage /></PatientV2></RequireAuth>} />
+                  <Route path="/account" element={<RequireAuth><PatientV2><AccountPage /></PatientV2></RequireAuth>} />
                   <Route path="/admin" element={<RequireAdmin><AdminDashboardPage /></RequireAdmin>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
