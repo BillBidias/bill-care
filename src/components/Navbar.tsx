@@ -57,7 +57,7 @@ const Navbar = () => {
         </div>
 
         <div className="hidden lg:flex shrink-0 items-center gap-3 ml-6">
-          <Link to="/cart" aria-label={cartLabel} className="relative grid h-9 w-9 place-items-center rounded-lg border border-border bg-background text-foreground hover:border-primary/25 hover:bg-secondary transition-colors">
+          <Link to="/cart" aria-label={cartLabel} className="relative grid h-9 w-9 place-items-center rounded-lg border border-[#00572f] bg-[#00572f] text-white hover:border-[#00572f] hover:bg-[#00572f] transition-colors">
             <ShoppingCart className="w-4 h-4" />
             {itemCount > 0 && <span className="absolute -top-1.5 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ring-2 ring-background">{itemCount}</span>}
           </Link>
@@ -66,7 +66,7 @@ const Navbar = () => {
             {langs.map((l) => <button key={l.code} onClick={() => setLang(l.code)} className={`text-[11px] font-bold px-2 py-1 rounded-md text-foreground transition-colors ${lang === l.code ? "bg-secondary" : "hover:bg-secondary"}`}>{l.label}</button>)}
           </div>
           <div className="flex flex-col gap-1">
-            <Button size="sm" className="h-7 px-4 font-bold" asChild><Link to="/finder">{tr(t.nav.startNow)}</Link></Button>
+            <Button size="sm" className="h-7 bg-[#00572f] px-4 font-bold text-white hover:bg-[#00572f]" asChild><Link to="/finder">{tr(t.nav.startNow)}</Link></Button>
             {user ? <><Button variant="ghost" size="sm" className="h-7 px-4 font-bold text-foreground" asChild><Link to="/patient">{patientLabel}</Link></Button><Button variant="outline" size="sm" className="sr-only" onClick={() => void signOut()}>{logoutLabel}</Button></> : <Button variant="outline" size="sm" className="h-7 px-4 font-bold text-foreground" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>}
           </div>
         </div>
