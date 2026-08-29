@@ -28,14 +28,14 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-1.5 rounded-full font-body font-semibold text-xs my-0 mb-px">
+            <span className="inline-flex items-center gap-2 bg-secondary text-foreground px-4 py-1.5 rounded-full font-body font-bold text-xs my-0 mb-px">
               {tr(t.hero.badge)}
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold leading-tight mb-6 mt-[39px]">
               {tr(t.hero.title1)}{" "}
               <span className="text-gradient-primary">{tr(t.hero.title2)}</span>
             </h1>
-            <p className="text-lg text-muted-foreground font-body max-w-lg mb-8 leading-relaxed">
+            <p className="text-lg text-foreground font-body font-bold max-w-lg mb-8 leading-relaxed">
               {tr({
                 fr: "Des programmes d’exercices structurés et un parcours guidé pour vous orienter vers les contenus les plus pertinents, avec une vérification de sécurité avant recommandation.",
                 en: "Structured exercise programmes and a guided pathway to help orient you toward the most relevant content, with a safety check before recommendation.",
@@ -54,7 +54,7 @@ const HeroSection = () => {
                 </Link>
               </Button>
             </div>
-            <div className="flex flex-wrap gap-3 text-xs font-body text-muted-foreground">
+            <div className="flex flex-wrap gap-3 text-xs font-body font-bold text-foreground">
               <span className="rounded-full bg-card/80 border border-border px-3 py-1.5">FR · EN · DE</span>
               <span className="rounded-full bg-card/80 border border-border px-3 py-1.5">{tr({ fr: "Safety Engine intégré", en: "Integrated Safety Engine", de: "Integrierte Sicherheitsprüfung" })}</span>
               <span className="rounded-full bg-card/80 border border-border px-3 py-1.5">{tr({ fr: "Suivi de progression", en: "Progress tracking", de: "Fortschrittsverfolgung" })}</span>
