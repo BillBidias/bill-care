@@ -58,10 +58,10 @@ const Navbar = () => {
             {itemCount > 0 && <span className="absolute -top-1.5 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ring-2 ring-background">{itemCount}</span>}
           </Link>
           <div className="flex items-center gap-1 border border-border rounded-lg bg-background px-1.5 py-1">
-            <Globe className="w-3.5 h-3.5 text-muted-foreground ml-1" />
-            {langs.map((l) => <button key={l.code} onClick={() => setLang(l.code)} className={`text-[11px] font-bold px-2 py-1 rounded-md transition-colors ${lang === l.code ? "bg-secondary text-primary" : "text-muted-foreground hover:text-foreground"}`}>{l.label}</button>)}
+            <Globe className="w-3.5 h-3.5 text-foreground ml-1" />
+            {langs.map((l) => <button key={l.code} onClick={() => setLang(l.code)} className={`text-[11px] font-bold px-2 py-1 rounded-md text-foreground transition-colors ${lang === l.code ? "bg-secondary" : "hover:bg-secondary"}`}>{l.label}</button>)}
           </div>
-          {user ? <><Button variant="ghost" size="sm" asChild><Link to="/patient">{patientLabel}</Link></Button><Button variant="outline" size="sm" onClick={() => void signOut()}>{logoutLabel}</Button></> : <Button variant="outline" size="sm" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>}
+          {user ? <><Button variant="ghost" size="sm" className="font-bold text-foreground" asChild><Link to="/patient">{patientLabel}</Link></Button><Button variant="outline" size="sm" className="font-bold text-foreground" onClick={() => void signOut()}>{logoutLabel}</Button></> : <Button variant="outline" size="sm" className="font-bold text-foreground" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>}
           <Button size="sm" asChild><Link to="/finder">{tr(t.nav.startNow)}</Link></Button>
         </div>
 
@@ -71,7 +71,7 @@ const Navbar = () => {
       </div>
 
       <div className="hidden lg:flex container mx-auto items-center gap-6 px-4 pb-2.5 pt-0.5">
-        {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => `text-[13px] font-bold transition-colors hover:text-primary ${isActive ? "text-primary" : "text-foreground"}`}>{l.label}</NavLink>)}
+        {links.map((l) => <NavLink key={l.to} to={l.to} className="text-[13px] font-bold text-foreground transition-colors hover:text-foreground">{l.label}</NavLink>)}
       </div>
 
       {open && (
