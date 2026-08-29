@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Menu, X, Globe, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ const Navbar = () => {
       </div>
 
       <div className="hidden lg:flex container mx-auto items-center gap-6 px-4 pb-2.5 pt-0.5">
-        {links.map((l) => <Link key={l.to} to={l.to} className="text-[13px] font-semibold text-muted-foreground hover:text-primary transition-colors">{l.label}</Link>)}
+        {links.map((l) => <NavLink key={l.to} to={l.to} className={({ isActive }) => `text-[13px] font-semibold transition-colors hover:text-primary ${isActive ? "text-primary" : "text-foreground"}`}>{l.label}</NavLink>)}
       </div>
 
       {open && (
