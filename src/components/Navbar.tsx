@@ -39,7 +39,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/98 backdrop-blur-xl shadow-[0_1px_10px_rgba(15,45,34,0.025)]">
-      <div className="container mx-auto flex items-center justify-between gap-5 h-[68px] px-4">
+      <div className="container mx-auto flex items-center justify-between gap-5 h-[104px] px-4">
         <Link to="/" className="flex shrink-0 items-center gap-3 rounded-xl bg-[#00572f] px-3 py-2 group" aria-label="Dein Digital-PHYSIO">
           <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-white border border-white/10">
             <span className="absolute h-2.5 w-2.5 rounded-full bg-primary -translate-y-[7px]" />
