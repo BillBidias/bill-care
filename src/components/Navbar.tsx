@@ -40,15 +40,15 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/98 backdrop-blur-xl shadow-[0_1px_10px_rgba(15,45,34,0.025)]">
       <div className="container mx-auto flex items-center justify-between h-[68px] px-4">
-        <Link to="/" className="flex items-center gap-3 group" aria-label="Dein Digital-PHYSIO">
-          <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-secondary border border-primary/10">
+        <Link to="/" className="flex items-center gap-3 rounded-xl bg-[#00572f] px-3 py-2 group" aria-label="Dein Digital-PHYSIO">
+          <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-white border border-white/10">
             <span className="absolute h-2.5 w-2.5 rounded-full bg-primary -translate-y-[7px]" />
             <span className="absolute h-[5px] w-5 rounded-full bg-primary rotate-[-42deg] translate-y-[5px] translate-x-[-4px]" />
             <span className="absolute h-[5px] w-5 rounded-full bg-primary rotate-[42deg] translate-y-[5px] translate-x-[4px]" />
           </span>
           <span className="leading-[1.05] text-left">
-            <span className="block text-[18px] font-extrabold tracking-[-0.03em] text-foreground">Dein</span>
-            <span className="block text-[14px] font-bold tracking-[-0.02em] text-primary">Digital-PHYSIO</span>
+            <span className="block text-[18px] font-extrabold tracking-[-0.03em] text-white">Dein</span>
+            <span className="block text-[14px] font-bold tracking-[-0.02em]"><span className="text-[#8ee000]">Digital-</span><span className="text-[#ff7a00]">PHYSIO</span></span>
           </span>
         </Link>
 
