@@ -56,7 +56,7 @@ const Navbar = () => {
           {links.map((l) => <NavLink key={l.to} to={l.to} className="whitespace-nowrap text-[12px] xl:text-[13px] font-bold text-foreground transition-colors hover:text-foreground">{l.label}</NavLink>)}
         </div>
 
-        <div className="hidden lg:flex shrink-0 items-center gap-2.5">
+        <div className="hidden lg:flex shrink-0 items-center gap-3 ml-6">
           <Link to="/cart" aria-label={cartLabel} className="relative grid h-9 w-9 place-items-center rounded-lg border border-border bg-background text-foreground hover:border-primary/25 hover:bg-secondary transition-colors">
             <ShoppingCart className="w-4 h-4" />
             {itemCount > 0 && <span className="absolute -top-1.5 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ring-2 ring-background">{itemCount}</span>}
@@ -65,8 +65,10 @@ const Navbar = () => {
             <Globe className="w-3.5 h-3.5 text-foreground ml-1" />
             {langs.map((l) => <button key={l.code} onClick={() => setLang(l.code)} className={`text-[11px] font-bold px-2 py-1 rounded-md text-foreground transition-colors ${lang === l.code ? "bg-secondary" : "hover:bg-secondary"}`}>{l.label}</button>)}
           </div>
-          {user ? <><Button variant="ghost" size="sm" className="font-bold text-foreground" asChild><Link to="/patient">{patientLabel}</Link></Button><Button variant="outline" size="sm" className="font-bold text-foreground" onClick={() => void signOut()}>{logoutLabel}</Button></> : <Button variant="outline" size="sm" className="font-bold text-foreground" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>}
-          <Button size="sm" asChild><Link to="/finder">{tr(t.nav.startNow)}</Link></Button>
+          <div className="flex flex-col gap-1">
+            <Button size="sm" className="h-7 px-4 font-bold" asChild><Link to="/finder">{tr(t.nav.startNow)}</Link></Button>
+            {user ? <><Button variant="ghost" size="sm" className="h-7 px-4 font-bold text-foreground" asChild><Link to="/patient">{patientLabel}</Link></Button><Button variant="outline" size="sm" className="sr-only" onClick={() => void signOut()}>{logoutLabel}</Button></> : <Button variant="outline" size="sm" className="h-7 px-4 font-bold text-foreground" asChild><Link to="/login">{tr(t.nav.login)}</Link></Button>}
+          </div>
         </div>
 
         <button className="lg:hidden grid h-10 w-10 place-items-center rounded-lg border border-border bg-background" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"}>
