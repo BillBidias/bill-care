@@ -39,8 +39,8 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/98 backdrop-blur-xl shadow-[0_1px_10px_rgba(15,45,34,0.025)]">
-      <div className="container mx-auto flex items-center justify-between h-[68px] px-4">
-        <Link to="/" className="flex items-center gap-3 rounded-xl bg-[#00572f] px-3 py-2 group" aria-label="Dein Digital-PHYSIO">
+      <div className="container mx-auto flex items-center justify-between gap-5 h-[68px] px-4">
+        <Link to="/" className="flex shrink-0 items-center gap-3 rounded-xl bg-[#00572f] px-3 py-2 group" aria-label="Dein Digital-PHYSIO">
           <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-white border border-white/10">
             <span className="absolute h-2.5 w-2.5 rounded-full bg-primary -translate-y-[7px]" />
             <span className="absolute h-[5px] w-5 rounded-full bg-primary rotate-[-42deg] translate-y-[5px] translate-x-[-4px]" />
@@ -52,7 +52,11 @@ const Navbar = () => {
           </span>
         </Link>
 
-        <div className="hidden lg:flex items-center gap-2.5">
+        <div className="hidden min-w-0 flex-1 lg:flex items-center justify-center gap-3 xl:gap-5">
+          {links.map((l) => <NavLink key={l.to} to={l.to} className="whitespace-nowrap text-[12px] xl:text-[13px] font-bold text-foreground transition-colors hover:text-foreground">{l.label}</NavLink>)}
+        </div>
+
+        <div className="hidden lg:flex shrink-0 items-center gap-2.5">
           <Link to="/cart" aria-label={cartLabel} className="relative grid h-9 w-9 place-items-center rounded-lg border border-border bg-background text-foreground hover:border-primary/25 hover:bg-secondary transition-colors">
             <ShoppingCart className="w-4 h-4" />
             {itemCount > 0 && <span className="absolute -top-1.5 -right-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ring-2 ring-background">{itemCount}</span>}
@@ -68,10 +72,6 @@ const Navbar = () => {
         <button className="lg:hidden grid h-10 w-10 place-items-center rounded-lg border border-border bg-background" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
-      </div>
-
-      <div className="hidden lg:flex container mx-auto items-center gap-6 px-4 pb-2.5 pt-0.5">
-        {links.map((l) => <NavLink key={l.to} to={l.to} className="text-[13px] font-bold text-foreground transition-colors hover:text-foreground">{l.label}</NavLink>)}
       </div>
 
       {open && (
