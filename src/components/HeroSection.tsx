@@ -43,7 +43,7 @@ const HeroSection = () => {
               })}
             </p>
             <div className="flex flex-wrap gap-4 mb-10">
-              <Button size="lg" className="rounded-full px-8 gap-2 font-body font-semibold" asChild>
+              <Button size="lg" className="rounded-full bg-[#00572f] px-8 gap-2 font-body font-semibold text-white hover:bg-[#00572f]" asChild>
                 <Link to="/finder">
                   {tr({ fr: "Trouver mon programme", en: "Find my programme", de: "Mein Programm finden" })} <ArrowRight className="w-4 h-4" />
                 </Link>
