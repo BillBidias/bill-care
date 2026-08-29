@@ -133,6 +133,20 @@
     background: hsl(var(--background));
   }
 
+  a[href]:not([aria-label="Dein Digital-PHYSIO"]):hover,
+  button:not(:disabled):hover,
+  [role="button"]:not([aria-label="Dein Digital-PHYSIO"]):hover {
+    background-color: hsl(var(--accent)) !important;
+    border-color: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
+  }
+
+  a[href]:not([aria-label="Dein Digital-PHYSIO"]):hover svg,
+  button:not(:disabled):hover svg,
+  [role="button"]:not([aria-label="Dein Digital-PHYSIO"]):hover svg {
+    color: currentColor !important;
+  }
+
   /* Reference-driven patient app skin */
   .patient-v2 {
     background: hsl(var(--background));
