@@ -16,8 +16,8 @@
     --popover: 150 8% 97%;
     --popover-foreground: 160 8% 8%;
 
-    /* Main brand/action green */
-    --primary: 156 77% 27%;
+    /* Official brand/action green: #00572f */
+    --primary: 152 100% 17%;
     --primary-foreground: 0 0% 100%;
 
     /* Soft blocks, badges, selected states */
@@ -37,7 +37,7 @@
 
     --border: 150 6% 89%;
     --input: 150 6% 89%;
-    --ring: 156 77% 27%;
+    --ring: 152 100% 17%;
 
     --radius: 0.75rem;
 
@@ -45,7 +45,7 @@
     --sage: 154 16% 83%;
     --sage-foreground: 160 8% 16%;
     --mint: 150 8% 96%;
-    --forest: 158 68% 18%;
+    --forest: 152 100% 17%;
     --cream: 0 0% 100%;
     --warm: 15 55% 53%;
 
@@ -55,12 +55,12 @@
     /* Application sidebar: white with light-grey selected surfaces */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 160 8% 11%;
-    --sidebar-primary: 156 77% 27%;
+    --sidebar-primary: 152 100% 17%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 150 7% 95%;
     --sidebar-accent-foreground: 160 8% 11%;
     --sidebar-border: 150 6% 89%;
-    --sidebar-ring: 156 77% 27%;
+    --sidebar-ring: 152 100% 17%;
   }
 }
 
