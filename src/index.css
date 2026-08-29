@@ -14,19 +14,15 @@
     --popover: 0 0% 100%;
     --popover-foreground: 160 19% 9%;
 
-    /* Main action / play / progress green from the approved reference */
     --primary: 156 77% 27%;
     --primary-foreground: 0 0% 100%;
 
-    /* Selected / active soft surface */
     --secondary: 151 31% 94%;
     --secondary-foreground: 158 58% 23%;
 
-    /* Neutral app surfaces */
     --muted: 150 8% 95%;
     --muted-foreground: 158 6% 43%;
 
-    /* Reserved for caution states, not decoration */
     --accent: 39 64% 55%;
     --accent-foreground: 160 19% 9%;
 
@@ -39,7 +35,6 @@
 
     --radius: 0.75rem;
 
-    /* Backward-compatible brand aliases */
     --sage: 154 24% 82%;
     --sage-foreground: 158 64% 19%;
     --mint: 153 35% 93%;
@@ -47,11 +42,9 @@
     --cream: 150 7% 97%;
     --warm: 39 64% 55%;
 
-    /* Approved reference is a clean modern sans-serif product UI */
     --font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
-    /* Shared application sidebar language */
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 160 17% 13%;
     --sidebar-primary: 156 77% 27%;
@@ -94,7 +87,6 @@
     background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--forest)));
   }
 
-  /* Clean white canvas with only a restrained mint glow */
   .bg-gradient-hero {
     background:
       radial-gradient(circle at 86% 8%, hsl(var(--mint) / 0.8) 0%, transparent 28%),
@@ -131,5 +123,48 @@
 
   .app-canvas {
     background: hsl(var(--background));
+  }
+
+  /*
+   * Reference-driven patient app skin.
+   * It intentionally changes presentation only; component behavior stays untouched.
+   */
+  .patient-v2 {
+    background: hsl(var(--background));
+  }
+
+  .patient-v2 .rounded-3xl {
+    border-radius: 0.75rem;
+  }
+
+  .patient-v2 .rounded-2xl {
+    border-radius: 0.625rem;
+  }
+
+  .patient-v2 .shadow-sm,
+  .patient-v2 .shadow-lg,
+  .patient-v2 .shadow-xl {
+    box-shadow:
+      0 1px 2px hsl(160 20% 10% / 0.025),
+      0 4px 14px hsl(160 20% 10% / 0.045);
+  }
+
+  .patient-v2 .bg-muted\/20 {
+    background-color: hsl(var(--background));
+  }
+
+  .patient-v2 .bg-muted\/50 {
+    background-color: hsl(var(--muted));
+  }
+
+  .patient-v2 article,
+  .patient-v2 section,
+  .patient-v2 aside {
+    border-color: hsl(var(--border));
+  }
+
+  .patient-v2 .border-primary\/20,
+  .patient-v2 .border-primary\/15 {
+    border-color: hsl(var(--primary) / 0.14);
   }
 }
