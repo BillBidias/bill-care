@@ -81,14 +81,14 @@ const ProgramFinderPage = () => {
   );
 
   const recommendations = useMemo(() => {
-    if (!config || !warningAccepted || safetyOutcome?.level === "red") return [];
+    if (!config || !warningAccepted) return [];
     return rankProgrammes(config, {
       bodyRegionKey: bodyRegion,
       selectedOptionIds: selectedOptions,
       goalKey: goal,
       icd10,
     });
-  }, [config, bodyRegion, selectedOptions, goal, icd10, warningAccepted, safetyOutcome]);
+  }, [config, bodyRegion, selectedOptions, goal, icd10, warningAccepted]);
 
   const toggleOption = (id: string) => {
     setSelectedOptions((current) =>
@@ -123,7 +123,7 @@ const ProgramFinderPage = () => {
     const outcome = evaluateSafety(config, bodyRegion, safetyAnswers);
     setSafetyOutcome(outcome);
     setWarningAccepted(false);
-    setStep(outcome.level === "red" ? "results" : "warning");
+    setStep("warning");
   };
 
   if (loading) {
@@ -276,7 +276,7 @@ const ProgramFinderPage = () => {
             {step === "safety" && (
               <div>
                 <h2 className="text-2xl font-heading font-bold mb-2">{tr({ fr: "6. Vérification de sécurité", en: "6. Safety check", de: "6. Sicherheitsprüfung" })}</h2>
-                <p className="text-sm text-muted-foreground mb-6">{tr({ fr: "Répondez à toutes les questions. Une réponse d’alerte peut bloquer ou limiter la recommandation automatique.", en: "Answer every question. A warning answer may block or limit automatic recommendation.", de: "Beantworten Sie alle Fragen. Eine Warnantwort kann die automatische Empfehlung blockieren oder einschränken." })}</p>
+                <p className="text-sm text-muted-foreground mb-6">{tr({ fr: "Répondez à toutes les questions. Une réponse d’alerte affichera un avertissement renforcé avant la recommandation automatique.", en: "Answer every question. A warning answer will show a stronger warning before automatic recommendation.", de: "Beantworten Sie alle Fragen. Eine Warnantwort zeigt vor der automatischen Empfehlung einen stärkeren Hinweis." })}</p>
                 <div className="space-y-4">
                   {applicableSafetyQuestions.map((question) => (
                     <div key={question.id} className="rounded-2xl border border-border p-4">
@@ -298,9 +298,9 @@ const ProgramFinderPage = () => {
 
             {step === "warning" && safetyOutcome && (
               <div>
-                <div className={`rounded-2xl p-5 mb-6 border ${safetyOutcome.level === "amber" ? "border-accent bg-accent/10" : "border-primary/30 bg-primary/5"}`}>
+                <div className={`rounded-2xl p-5 mb-6 border ${safetyOutcome.level !== "green" ? "border-accent bg-accent/10" : "border-primary/30 bg-primary/5"}`}>
                   <div className="flex gap-3">
-                    {safetyOutcome.level === "amber" ? <AlertTriangle className="w-6 h-6 shrink-0 text-accent" /> : <CheckCircle2 className="w-6 h-6 shrink-0 text-primary" />}
+                    {safetyOutcome.level !== "green" ? <AlertTriangle className="w-6 h-6 shrink-0 text-accent" /> : <CheckCircle2 className="w-6 h-6 shrink-0 text-primary" />}
                     <div>
                       <h2 className="font-heading text-xl font-bold mb-2">{tr(safetyOutcome.title)}</h2>
                       <p className="text-sm text-muted-foreground">{tr(safetyOutcome.body)}</p>
@@ -322,65 +322,52 @@ const ProgramFinderPage = () => {
 
             {step === "results" && (
               <div>
-                {safetyOutcome?.level === "red" ? (
-                  <div className="text-center py-4">
-                    <ShieldAlert className="w-12 h-12 mx-auto text-destructive mb-4" />
-                    <h2 className="text-2xl font-heading font-bold mb-3">{tr(safetyOutcome.title)}</h2>
-                    <p className="text-muted-foreground max-w-2xl mx-auto mb-6">{tr(safetyOutcome.body)}</p>
-                    <Button variant="outline" onClick={() => { setSafetyAnswers({}); setSafetyOutcome(null); setStep("safety"); }} className="rounded-full">
-                      {tr({ fr: "Revoir mes réponses", en: "Review my answers", de: "Antworten überprüfen" })}
-                    </Button>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-heading font-bold mb-2">{tr({ fr: "Programmes potentiellement pertinents", en: "Potentially relevant programmes", de: "Möglicherweise passende Programme" })}</h2>
+                  <p className="text-sm text-muted-foreground">{tr({ fr: "Ce classement est une orientation basée sur vos réponses déclarées. Il ne confirme aucune pathologie.", en: "This ranking is guidance based on your declared answers. It does not confirm any condition.", de: "Diese Rangfolge ist eine Orientierung auf Basis Ihrer Angaben. Sie bestätigt keine Erkrankung." })}</p>
+                </div>
+                {safetyOutcome && safetyOutcome.level !== "green" && (
+                  <div className={`mb-5 rounded-2xl border p-4 flex gap-3 ${safetyOutcome.level === "red" ? "border-destructive/30 bg-destructive/10" : "border-accent bg-accent/10"}`}>
+                    <AlertTriangle className={`w-5 h-5 shrink-0 ${safetyOutcome.level === "red" ? "text-destructive" : "text-accent"}`} />
+                    <p className="text-sm">{tr({ fr: "Vous pouvez consulter ces programmes, mais ils ne remplacent pas l’avis ou la consultation d’un professionnel de santé.", en: "You can review these programmes, but they do not replace advice or consultation with a healthcare professional.", de: "Sie können diese Programme ansehen, sie ersetzen jedoch keine Beratung oder Konsultation durch eine medizinische Fachperson." })}</p>
+                  </div>
+                )}
+                {recommendations.length === 0 ? (
+                  <div className="rounded-2xl border border-border p-8 text-center">
+                    <p className="font-body font-semibold mb-2">{tr({ fr: "Aucune correspondance suffisamment forte n’a été trouvée.", en: "No sufficiently strong match was found.", de: "Es wurde keine ausreichend starke Übereinstimmung gefunden." })}</p>
+                    <p className="text-sm text-muted-foreground mb-5">{tr({ fr: "Nous préférons ne pas inventer une recommandation. Vous pouvez parcourir le catalogue ou demander un avis professionnel.", en: "We prefer not to invent a recommendation. You can browse the catalogue or seek professional advice.", de: "Wir erfinden lieber keine Empfehlung. Sie können den Katalog ansehen oder fachlichen Rat einholen." })}</p>
+                    <Button asChild variant="outline"><Link to="/programs">{tr({ fr: "Voir le catalogue", en: "Browse catalogue", de: "Katalog ansehen" })}</Link></Button>
                   </div>
                 ) : (
-                  <>
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-heading font-bold mb-2">{tr({ fr: "Programmes potentiellement pertinents", en: "Potentially relevant programmes", de: "Möglicherweise passende Programme" })}</h2>
-                      <p className="text-sm text-muted-foreground">{tr({ fr: "Ce classement est une orientation basée sur vos réponses déclarées. Il ne confirme aucune pathologie.", en: "This ranking is guidance based on your declared answers. It does not confirm any condition.", de: "Diese Rangfolge ist eine Orientierung auf Basis Ihrer Angaben. Sie bestätigt keine Erkrankung." })}</p>
-                    </div>
-                    {safetyOutcome?.level === "amber" && (
-                      <div className="mb-5 rounded-2xl border border-accent bg-accent/10 p-4 flex gap-3">
-                        <AlertTriangle className="w-5 h-5 shrink-0 text-accent" />
-                        <p className="text-sm">{tr({ fr: "Vous pouvez consulter ces programmes, mais le démarrage doit rester bloqué jusqu’à un avis professionnel adapté.", en: "You may review these programmes, but starting must remain blocked until appropriate professional advice is obtained.", de: "Sie können diese Programme ansehen, der Start muss jedoch bis zu einer geeigneten fachlichen Abklärung gesperrt bleiben." })}</p>
-                      </div>
-                    )}
-                    {recommendations.length === 0 ? (
-                      <div className="rounded-2xl border border-border p-8 text-center">
-                        <p className="font-body font-semibold mb-2">{tr({ fr: "Aucune correspondance suffisamment forte n’a été trouvée.", en: "No sufficiently strong match was found.", de: "Es wurde keine ausreichend starke Übereinstimmung gefunden." })}</p>
-                        <p className="text-sm text-muted-foreground mb-5">{tr({ fr: "Nous préférons ne pas inventer une recommandation. Vous pouvez parcourir le catalogue ou demander un avis professionnel.", en: "We prefer not to invent a recommendation. You can browse the catalogue or seek professional advice.", de: "Wir erfinden lieber keine Empfehlung. Sie können den Katalog ansehen oder fachlichen Rat einholen." })}</p>
-                        <Button asChild variant="outline"><Link to="/programs">{tr({ fr: "Voir le catalogue", en: "Browse catalogue", de: "Katalog ansehen" })}</Link></Button>
-                      </div>
-                    ) : (
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {recommendations.map((recommendation, index) => {
-                          const program = programs.find((item) => item.id === recommendation.programmeId);
-                          if (!program) return null;
-                          return (
-                            <div key={program.id} className="rounded-2xl border border-border bg-background p-5 shadow-card">
-                              <div className="flex items-start justify-between gap-3 mb-3">
-                                <div>
-                                  <p className="text-xs uppercase tracking-wider text-primary font-semibold">{index === 0 ? tr({ fr: "Meilleure correspondance", en: "Best match", de: "Beste Übereinstimmung" }) : tr({ fr: "Alternative", en: "Alternative", de: "Alternative" })}</p>
-                                  <h3 className="font-heading font-bold text-xl mt-1">{tr(program.title)}</h3>
-                                </div>
-                                <span className="text-3xl" aria-hidden="true">{program.image}</span>
-                              </div>
-                              <p className="text-sm text-muted-foreground mb-4">{tr(program.region)}</p>
-                              <div className="flex flex-wrap gap-2 text-xs mb-5">
-                                <span className="rounded-full bg-secondary px-3 py-1">{recommendation.matchedOptionCount} {tr({ fr: "signal(aux) correspondant(s)", en: "matching signal(s)", de: "passende Signal(e)" })}</span>
-                                {recommendation.matchedGoal && <span className="rounded-full bg-secondary px-3 py-1">{tr({ fr: "objectif correspondant", en: "matching goal", de: "passendes Ziel" })}</span>}
-                                {recommendation.matchedIcd10 && <span className="rounded-full bg-secondary px-3 py-1">ICD-10</span>}
-                              </div>
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="font-heading font-bold text-primary text-xl">{program.price} €</span>
-                                <Button asChild variant="outline" className="rounded-full">
-                                  <Link to="/programs">{tr({ fr: "Voir le programme", en: "View programme", de: "Programm ansehen" })}</Link>
-                                </Button>
-                              </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {recommendations.map((recommendation, index) => {
+                      const program = programs.find((item) => item.id === recommendation.programmeId);
+                      if (!program) return null;
+                      return (
+                        <div key={program.id} className="rounded-2xl border border-border bg-background p-5 shadow-card">
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <p className="text-xs uppercase tracking-wider text-primary font-semibold">{index === 0 ? tr({ fr: "Meilleure correspondance", en: "Best match", de: "Beste Übereinstimmung" }) : tr({ fr: "Alternative", en: "Alternative", de: "Alternative" })}</p>
+                              <h3 className="font-heading font-bold text-xl mt-1">{tr(program.title)}</h3>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
+                            <span className="text-3xl" aria-hidden="true">{program.image}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-4">{tr(program.region)}</p>
+                          <div className="flex flex-wrap gap-2 text-xs mb-5">
+                            <span className="rounded-full bg-secondary px-3 py-1">{recommendation.matchedOptionCount} {tr({ fr: "signal(aux) correspondant(s)", en: "matching signal(s)", de: "passende Signal(e)" })}</span>
+                            {recommendation.matchedGoal && <span className="rounded-full bg-secondary px-3 py-1">{tr({ fr: "objectif correspondant", en: "matching goal", de: "passendes Ziel" })}</span>}
+                            {recommendation.matchedIcd10 && <span className="rounded-full bg-secondary px-3 py-1">ICD-10</span>}
+                          </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-heading font-bold text-primary text-xl">{program.price} €</span>
+                            <Button asChild variant="outline" className="rounded-full">
+                              <Link to="/programs">{tr({ fr: "Voir le programme", en: "View programme", de: "Programm ansehen" })}</Link>
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
 
                 <div className="mt-8 border-t border-border pt-5 flex flex-wrap justify-between gap-3">
