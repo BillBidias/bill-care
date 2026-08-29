@@ -13,6 +13,7 @@ import ProgramsPage from "./pages/ProgramsPage.tsx";
 import ProgramFinderPage from "./pages/ProgramFinderPage.tsx";
 import AboutPage from "./pages/AboutPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import ExamplePage from "./pages/ExamplePage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import AccountPage from "./pages/AccountPage.tsx";
@@ -53,6 +54,7 @@ const App = () => (
                   <Route path="/programs" element={<ProgramsPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/example" element={<ExamplePage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/impressum" element={<ImpressumPage />} />
