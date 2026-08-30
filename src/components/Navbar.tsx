@@ -30,7 +30,7 @@ const Navbar = () => {
     { to: "/", label: tr(t.nav.home) },
     { to: "/finder", label: tr({ fr: "Trouver mon programme", en: "Find my programme", de: "Mein Programm finden" }) },
     { to: "/programs", label: tr(t.nav.programs) },
-    { to: "/how-it-works", label: tr(t.nav.howItWorks) },
+    { to: "/training-videos", label: tr(t.nav.howItWorks) },
     { to: "/about", label: tr(t.nav.about) },
     { to: "/blog", label: tr(t.nav.blog) },
     { to: "/faq", label: tr(t.nav.faq) },
