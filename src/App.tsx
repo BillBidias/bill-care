@@ -14,6 +14,7 @@ import ProgramFinderPage from "./pages/ProgramFinderPage.tsx";
 import AboutPage from "./pages/AboutPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ExamplePage from "./pages/ExamplePage.tsx";
+import PurchaseSimulationPage from "./pages/PurchaseSimulationPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import AccountPage from "./pages/AccountPage.tsx";
@@ -52,6 +53,7 @@ const App = () => (
                   <Route path="/finder" element={<ProgramFinderPage />} />
                   <Route path="/quiz" element={<ProgramFinderPage />} />
                   <Route path="/programs" element={<ProgramsPage />} />
+                  <Route path="/purchase-simulation" element={<PurchaseSimulationPage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/example" element={<ExamplePage />} />
