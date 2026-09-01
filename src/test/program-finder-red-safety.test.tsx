@@ -8,7 +8,6 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import { I18nProvider } from "@/lib/i18n";
-import type { FinderSafetyOutcome, ProgramFinderConfig } from "@/data/programFinderRepository";
 
 vi.mock("@/components/Navbar", () => ({ default: () => <div data-testid="navbar" /> }));
 vi.mock("@/components/Footer", () => ({ default: () => <div data-testid="footer" /> }));
@@ -26,96 +25,100 @@ vi.mock("@/hooks/useCatalogue", () => ({
   }),
 }));
 
-const outcomes: Record<"green" | "amber" | "red", FinderSafetyOutcome> = {
-  green: {
-    level: "green",
-    allowsRecommendations: true,
-    requiresAcknowledgement: true,
-    requiresProfessionalReview: false,
-    blocksProgrammeStart: false,
-    title: { fr: "GREEN OK", en: "GREEN OK", de: "GREEN OK" },
-    body: { fr: "GREEN BODY", en: "GREEN BODY", de: "GREEN BODY" },
-  },
-  amber: {
-    level: "amber",
-    allowsRecommendations: true,
-    requiresAcknowledgement: true,
-    requiresProfessionalReview: true,
-    blocksProgrammeStart: true,
-    title: { fr: "AMBER REVIEW", en: "AMBER REVIEW", de: "AMBER REVIEW" },
-    body: { fr: "AMBER BODY", en: "AMBER BODY", de: "AMBER BODY" },
-  },
-  red: {
-    level: "red",
-    allowsRecommendations: false,
-    requiresAcknowledgement: false,
-    requiresProfessionalReview: true,
-    blocksProgrammeStart: true,
-    title: { fr: "RED STOP", en: "RED STOP", de: "RED STOP" },
-    body: {
-      fr: "Évaluation professionnelle requise avant tout programme automatique.",
-      en: "Professional assessment is required before any automatic programme.",
-      de: "Vor einem automatischen Programm ist eine fachliche Abklärung erforderlich.",
+const repoMocks = vi.hoisted(() => {
+  const outcomes = {
+    green: {
+      level: "green",
+      allowsRecommendations: true,
+      requiresAcknowledgement: true,
+      requiresProfessionalReview: false,
+      blocksProgrammeStart: false,
+      title: { fr: "GREEN OK", en: "GREEN OK", de: "GREEN OK" },
+      body: { fr: "GREEN BODY", en: "GREEN BODY", de: "GREEN BODY" },
     },
-  },
-};
+    amber: {
+      level: "amber",
+      allowsRecommendations: true,
+      requiresAcknowledgement: true,
+      requiresProfessionalReview: true,
+      blocksProgrammeStart: true,
+      title: { fr: "AMBER REVIEW", en: "AMBER REVIEW", de: "AMBER REVIEW" },
+      body: { fr: "AMBER BODY", en: "AMBER BODY", de: "AMBER BODY" },
+    },
+    red: {
+      level: "red",
+      allowsRecommendations: false,
+      requiresAcknowledgement: false,
+      requiresProfessionalReview: true,
+      blocksProgrammeStart: true,
+      title: { fr: "RED STOP", en: "RED STOP", de: "RED STOP" },
+      body: {
+        fr: "Évaluation professionnelle requise avant tout programme automatique.",
+        en: "Professional assessment is required before any automatic programme.",
+        de: "Vor einem automatischen Programm ist eine fachliche Abklärung erforderlich.",
+      },
+    },
+  } as const;
 
-const config: ProgramFinderConfig = {
-  bodyRegions: [{ key: "knee", label: { fr: "Genou", en: "Knee", de: "Knie" }, sortOrder: 0 }],
-  goals: [{ key: "relief", label: { fr: "Soulager", en: "Relief", de: "Linderung" }, sortOrder: 0 }],
-  options: [
-    {
-      id: "symptom-1",
-      stableKey: "pain",
-      optionType: "symptom",
-      sortOrder: 0,
-      label: { fr: "Douleur", en: "Pain", de: "Schmerz" },
-      helpText: {},
-      bodyRegions: ["knee"],
-      programmeScores: [{ programmeId: 1, score: 10 }],
+  const config = {
+    bodyRegions: [{ key: "knee", label: { fr: "Genou", en: "Knee", de: "Knie" }, sortOrder: 0 }],
+    goals: [{ key: "relief", label: { fr: "Soulager", en: "Relief", de: "Linderung" }, sortOrder: 0 }],
+    options: [
+      {
+        id: "symptom-1",
+        stableKey: "pain",
+        optionType: "symptom",
+        sortOrder: 0,
+        label: { fr: "Douleur", en: "Pain", de: "Schmerz" },
+        helpText: {},
+        bodyRegions: ["knee"],
+        programmeScores: [{ programmeId: 1, score: 10 }],
+      },
+    ],
+    safetyQuestions: [
+      {
+        id: "safety-1",
+        stableKey: "red-flag",
+        riskIfYes: "red",
+        riskIfNo: "green",
+        isGlobal: true,
+        sortOrder: 0,
+        question: { fr: "Signal d’alerte ?", en: "Warning sign?", de: "Warnsignal?" },
+        helpText: {},
+        bodyRegions: [],
+      },
+    ],
+    safetyOutcomes: Object.values(outcomes),
+    acknowledgement: {
+      version: "test",
+      title: { fr: "Avertissement", en: "Acknowledgement", de: "Hinweis" },
+      body: { fr: "Texte avertissement", en: "Acknowledgement body", de: "Hinweistext" },
+      checkboxLabel: { fr: "J’ai compris", en: "I understand", de: "Ich verstehe" },
     },
-  ],
-  safetyQuestions: [
-    {
-      id: "safety-1",
-      stableKey: "red-flag",
-      riskIfYes: "red",
-      riskIfNo: "green",
-      isGlobal: true,
-      sortOrder: 0,
-      question: { fr: "Signal d’alerte ?", en: "Warning sign?", de: "Warnsignal?" },
-      helpText: {},
-      bodyRegions: [],
+    recommendationPolicy: {
+      version: "test",
+      maxResults: 3,
+      minScore: 1,
+      primaryBodyRegionWeight: 10,
+      secondaryBodyRegionWeight: 6,
+      goalWeight: 5,
+      assessmentSignalMultiplier: 1,
+      icd10SignalMultiplier: 1,
     },
-  ],
-  safetyOutcomes: Object.values(outcomes),
-  acknowledgement: {
-    version: "test",
-    title: { fr: "Avertissement", en: "Acknowledgement", de: "Hinweis" },
-    body: { fr: "Texte avertissement", en: "Acknowledgement body", de: "Hinweistext" },
-    checkboxLabel: { fr: "J’ai compris", en: "I understand", de: "Ich verstehe" },
-  },
-  recommendationPolicy: {
-    version: "test",
-    maxResults: 3,
-    minScore: 1,
-    primaryBodyRegionWeight: 10,
-    secondaryBodyRegionWeight: 6,
-    goalWeight: 5,
-    assessmentSignalMultiplier: 1,
-    icd10SignalMultiplier: 1,
-  },
-  programmeBodyRegions: [{ programmeId: 1, bodyRegionKey: "knee", isPrimary: true }],
-  programmeGoals: [{ programmeId: 1, goalKey: "relief" }],
-  icd10Matches: [],
-};
+    programmeBodyRegions: [{ programmeId: 1, bodyRegionKey: "knee", isPrimary: true }],
+    programmeGoals: [{ programmeId: 1, goalKey: "relief" }],
+    icd10Matches: [],
+  };
 
-const repoMocks = vi.hoisted(() => ({
-  outcome: "green" as "green" | "amber" | "red",
-  rankProgrammes: vi.fn(() => [
-    { programmeId: 1, score: 20, matchedOptionCount: 1, matchedGoal: true, matchedIcd10: false },
-  ]),
-}));
+  return {
+    outcome: "green" as "green" | "amber" | "red",
+    outcomes,
+    config,
+    rankProgrammes: vi.fn(() => [
+      { programmeId: 1, score: 20, matchedOptionCount: 1, matchedGoal: true, matchedIcd10: false },
+    ]),
+  };
+});
 
 vi.mock("@/data/programFinderRepository", async () => {
   const actual = await vi.importActual<typeof import("@/data/programFinderRepository")>(
@@ -123,9 +126,9 @@ vi.mock("@/data/programFinderRepository", async () => {
   );
   return {
     ...actual,
-    loadProgramFinderConfig: vi.fn(async () => config),
-    getApplicableSafetyQuestions: vi.fn(() => config.safetyQuestions),
-    evaluateSafety: vi.fn(() => outcomes[repoMocks.outcome]),
+    loadProgramFinderConfig: vi.fn(async () => repoMocks.config),
+    getApplicableSafetyQuestions: vi.fn(() => repoMocks.config.safetyQuestions),
+    evaluateSafety: vi.fn(() => repoMocks.outcomes[repoMocks.outcome]),
     rankProgrammes: repoMocks.rankProgrammes,
   };
 });
@@ -161,7 +164,7 @@ async function completeAllowedFlow(level: "green" | "amber") {
   await advanceToSafety(user);
   await user.click(screen.getByRole("button", { name: "Non" }));
   await user.click(screen.getByRole("button", { name: "Évaluer la sécurité" }));
-  expect(await screen.findByText(outcomes[level].title.fr)).toBeInTheDocument();
+  expect(await screen.findByText(repoMocks.outcomes[level].title.fr)).toBeInTheDocument();
   expect(screen.getByText("Avertissement")).toBeInTheDocument();
   await user.click(screen.getByRole("checkbox"));
   await user.click(screen.getByRole("button", { name: /Voir les programmes recommandés/ }));
