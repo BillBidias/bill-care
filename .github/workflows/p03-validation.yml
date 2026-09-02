@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
@@ -32,7 +34,7 @@ jobs:
 
       - name: Verify P03 scope
         run: |
-          git fetch origin main --depth=1
+          git fetch origin main
           changed="$(git diff --name-only origin/main...HEAD)"
           printf '%s\n' "$changed"
           test "$changed" = $'.github/workflows/p03-validation.yml\nsrc/data/paymentRepository.ts\nsrc/test/paymentRepository.test.ts' || {
