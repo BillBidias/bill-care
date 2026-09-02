@@ -1,0 +1,83 @@
+name: P02 Lockfile Consistency Fix
+
+on:
+  push:
+    branches:
+      - p02-npm-lockfile-consistency-fix
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Record package.json baseline
+        run: cp package.json /tmp/package.json.before
+
+      - name: Repair Supabase lock entry at exact version
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-prefix="^" @supabase/supabase-js@2.112.3
+
+      - name: Verify package.json unchanged after Supabase repair
+        run: diff -u /tmp/package.json.before package.json
+
+      - name: Repair user-event lock entry at exact version
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-dev --save-prefix="^" @testing-library/user-event@14.6.5
+
+      - name: Verify package.json remains unchanged
+        run: diff -u /tmp/package.json.before package.json
+
+      - name: Verify exact direct lock versions
+        run: |
+          node - <<'NODE'
+          const lock = require('./package-lock.json');
+          const supabase = lock.packages['node_modules/@supabase/supabase-js'];
+          const userEvent = lock.packages['node_modules/@testing-library/user-event'];
+          if (!supabase || supabase.version !== '2.112.3') throw new Error(`Unexpected Supabase lock version: ${supabase?.version}`);
+          if (!userEvent || userEvent.version !== '14.6.5') throw new Error(`Unexpected user-event lock version: ${userEvent?.version}`);
+          console.log('Exact lock versions verified.');
+          NODE
+
+      - name: Ensure repair scope is only package-lock plus temporary workflow
+        run: |
+          changed=$(git diff --name-only)
+          printf '%s\n' "$changed"
+          unexpected=$(printf '%s\n' "$changed" | grep -vE '^(package-lock\.json)$' || true)
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected changed files:"
+            echo "$unexpected"
+            exit 1
+          fi
+
+      - name: Clean install from repaired lock
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run test suite
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Commit repaired lockfile when needed
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json already repaired; nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "fix: synchronize npm lockfile for P02"
+          git push origin HEAD:p02-npm-lockfile-consistency-fix
