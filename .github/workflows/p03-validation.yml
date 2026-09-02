@@ -35,7 +35,7 @@ jobs:
           git fetch origin main --depth=1
           changed="$(git diff --name-only origin/main...HEAD)"
           printf '%s\n' "$changed"
-          test "$changed" = $'src/data/paymentRepository.ts\nsrc/test/paymentRepository.test.ts\n.github/workflows/p03-validation.yml' || {
+          test "$changed" = $'.github/workflows/p03-validation.yml\nsrc/data/paymentRepository.ts\nsrc/test/paymentRepository.test.ts' || {
             echo "Unexpected P03 file scope"
             exit 1
           }
