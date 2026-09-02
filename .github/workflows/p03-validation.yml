@@ -1,0 +1,41 @@
+name: P03 Stripe Redirect Security Validation
+
+on:
+  push:
+    branches:
+      - p03-stripe-checkout-redirect-security-fix
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Clean install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify P03 scope
+        run: |
+          git fetch origin main --depth=1
+          changed="$(git diff --name-only origin/main...HEAD)"
+          printf '%s\n' "$changed"
+          test "$changed" = $'src/data/paymentRepository.ts\nsrc/test/paymentRepository.test.ts\n.github/workflows/p03-validation.yml' || {
+            echo "Unexpected P03 file scope"
+            exit 1
+          }
