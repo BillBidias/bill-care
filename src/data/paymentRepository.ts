@@ -98,13 +98,27 @@ export async function createStripeCheckoutSession(
   };
 }
 
-/** Redirects only to a HTTPS Stripe Checkout URL returned by the trusted server. */
+export function isTrustedStripeCheckoutUrl(sessionUrl: string): boolean {
+  try {
+    const url = new URL(sessionUrl);
+    return (
+      url.protocol === "https:" &&
+      url.hostname === "checkout.stripe.com" &&
+      url.port === "" &&
+      url.username === "" &&
+      url.password === ""
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Redirects only to the canonical HTTPS Stripe-hosted Checkout domain. */
 export function redirectToStripeCheckout(session: StripeCheckoutSession): void {
-  const url = new URL(session.sessionUrl);
-  if (url.protocol !== "https:" || !url.hostname.endsWith("stripe.com")) {
+  if (!isTrustedStripeCheckoutUrl(session.sessionUrl)) {
     throw new PaymentStartError("unknown", "Untrusted payment redirect URL.");
   }
-  window.location.assign(url.toString());
+  window.location.assign(session.sessionUrl);
 }
 
 /** Reads only the authenticated user's own order through existing RLS. */
