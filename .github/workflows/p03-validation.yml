@@ -39,3 +39,5 @@ jobs:
             echo "Unexpected P03 file scope"
             exit 1
           }
+
+# Temporary validation workflow; remove before opening the final PR.
