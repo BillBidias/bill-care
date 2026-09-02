@@ -81,14 +81,14 @@ const ProgramFinderPage = () => {
   );
 
   const recommendations = useMemo(() => {
-    if (!config || !warningAccepted) return [];
+    if (!config || !warningAccepted || safetyOutcome?.allowsRecommendations === false) return [];
     return rankProgrammes(config, {
       bodyRegionKey: bodyRegion,
       selectedOptionIds: selectedOptions,
       goalKey: goal,
       icd10,
     });
-  }, [config, bodyRegion, selectedOptions, goal, icd10, warningAccepted]);
+  }, [config, bodyRegion, selectedOptions, goal, icd10, warningAccepted, safetyOutcome]);
 
   const toggleOption = (id: string) => {
     setSelectedOptions((current) =>
@@ -298,9 +298,9 @@ const ProgramFinderPage = () => {
 
             {step === "warning" && safetyOutcome && (
               <div>
-                <div className={`rounded-2xl p-5 mb-6 border ${safetyOutcome.level !== "green" ? "border-accent bg-accent/10" : "border-primary/30 bg-primary/5"}`}>
+                <div className={`rounded-2xl p-5 mb-6 border ${safetyOutcome.level === "red" ? "border-destructive/30 bg-destructive/10" : safetyOutcome.level === "amber" ? "border-accent bg-accent/10" : "border-primary/30 bg-primary/5"}`}>
                   <div className="flex gap-3">
-                    {safetyOutcome.level !== "green" ? <AlertTriangle className="w-6 h-6 shrink-0 text-accent" /> : <CheckCircle2 className="w-6 h-6 shrink-0 text-primary" />}
+                    {safetyOutcome.level !== "green" ? <AlertTriangle className={`w-6 h-6 shrink-0 ${safetyOutcome.level === "red" ? "text-destructive" : "text-accent"}`} /> : <CheckCircle2 className="w-6 h-6 shrink-0 text-primary" />}
                     <div>
                       <h2 className="font-heading text-xl font-bold mb-2">{tr(safetyOutcome.title)}</h2>
                       <p className="text-sm text-muted-foreground">{tr(safetyOutcome.body)}</p>
@@ -308,19 +308,30 @@ const ProgramFinderPage = () => {
                   </div>
                 </div>
 
-                <h3 className="text-2xl font-heading font-bold mb-3">{tr(config.acknowledgement.title)}</h3>
-                <div className="rounded-2xl border border-border bg-background p-5 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                  {tr(config.acknowledgement.body)}
-                </div>
-                <label className="mt-5 flex items-start gap-3 rounded-2xl border border-border p-4 cursor-pointer">
-                  <input type="checkbox" checked={warningAccepted} onChange={(event) => setWarningAccepted(event.target.checked)} className="mt-1 h-4 w-4" />
-                  <span className="font-body text-sm">{tr(config.acknowledgement.checkboxLabel)}</span>
-                </label>
-                <NavButtons onBack={() => { setStep("safety"); setWarningAccepted(false); }} onNext={() => setStep("results")} nextDisabled={!warningAccepted} tr={tr} nextLabel={tr({ fr: "Voir les programmes recommandés", en: "See recommended programmes", de: "Empfohlene Programme ansehen" })} />
+                {safetyOutcome.allowsRecommendations ? (
+                  <>
+                    <h3 className="text-2xl font-heading font-bold mb-3">{tr(config.acknowledgement.title)}</h3>
+                    <div className="rounded-2xl border border-border bg-background p-5 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                      {tr(config.acknowledgement.body)}
+                    </div>
+                    <label className="mt-5 flex items-start gap-3 rounded-2xl border border-border p-4 cursor-pointer">
+                      <input type="checkbox" checked={warningAccepted} onChange={(event) => setWarningAccepted(event.target.checked)} className="mt-1 h-4 w-4" />
+                      <span className="font-body text-sm">{tr(config.acknowledgement.checkboxLabel)}</span>
+                    </label>
+                    <NavButtons onBack={() => { setStep("safety"); setWarningAccepted(false); }} onNext={() => setStep("results")} nextDisabled={!warningAccepted} tr={tr} nextLabel={tr({ fr: "Voir les programmes recommandés", en: "See recommended programmes", de: "Empfohlene Programme ansehen" })} />
+                  </>
+                ) : (
+                  <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+                    <Button type="button" variant="ghost" onClick={() => { setStep("safety"); setWarningAccepted(false); }} className="gap-2 rounded-full">
+                      <ArrowLeft className="w-4 h-4" /> {tr({ fr: "Retour", en: "Back", de: "Zurück" })}
+                    </Button>
+                    <Button asChild variant="outline"><Link to="/medical-disclaimer">{tr({ fr: "Lire l’avertissement médical", en: "Read medical disclaimer", de: "Medizinischen Hinweis lesen" })}</Link></Button>
+                  </div>
+                )}
               </div>
             )}
 
-            {step === "results" && (
+            {step === "results" && safetyOutcome?.allowsRecommendations !== false && (
               <div>
                 <div className="mb-6">
                   <h2 className="text-2xl font-heading font-bold mb-2">{tr({ fr: "Programmes potentiellement pertinents", en: "Potentially relevant programmes", de: "Möglicherweise passende Programme" })}</h2>
