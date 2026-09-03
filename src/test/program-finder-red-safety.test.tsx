@@ -170,6 +170,10 @@ async function completeAllowedFlow(level: "green" | "amber") {
   await user.click(screen.getByRole("button", { name: /Voir les programmes recommandés/ }));
   expect(await screen.findByText("Programmes potentiellement pertinents")).toBeInTheDocument();
   expect(screen.getByText("Programme test")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Voir le programme" })).toHaveAttribute(
+    "href",
+    "/programs?program=1",
+  );
 }
 
 beforeEach(() => {
