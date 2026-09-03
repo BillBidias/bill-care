@@ -12,21 +12,23 @@ import { I18nProvider } from "@/lib/i18n";
 vi.mock("@/components/Navbar", () => ({ default: () => <div data-testid="navbar" /> }));
 vi.mock("@/components/Footer", () => ({ default: () => <div data-testid="footer" /> }));
 
-const programme = {
-  id: 7,
-  category: "knee-thigh",
-  region: { fr: "Genou & cuisse", en: "Knee & thigh", de: "Knie & Oberschenkel" },
-  title: { fr: "Programme genou recommandé", en: "Recommended knee programme", de: "Empfohlenes Knieprogramm" },
-  price: 69,
-  duration: "12 sem.",
-  level: "Avancé",
-  image: "🦵",
-  icd10: "M17",
-};
+const catalogueMocks = vi.hoisted(() => ({
+  programme: {
+    id: 7,
+    category: "knee-thigh",
+    region: { fr: "Genou & cuisse", en: "Knee & thigh", de: "Knie & Oberschenkel" },
+    title: { fr: "Programme genou recommandé", en: "Recommended knee programme", de: "Empfohlenes Knieprogramm" },
+    price: 69,
+    duration: "12 sem.",
+    level: "Avancé",
+    image: "🦵",
+    icd10: "M17",
+  },
+}));
 
 vi.mock("@/hooks/useCatalogue", () => ({
   useCatalogue: () => ({
-    programs: [programme],
+    programs: [catalogueMocks.programme],
     categoryKeys: ["knee-thigh"],
     source: "supabase",
     fallbackReason: null,
