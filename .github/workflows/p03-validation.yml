@@ -1,0 +1,46 @@
+name: P03 Validation
+
+on:
+  push:
+    branches:
+      - p03-program-finder-recommendation-handoff
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Verify P03 scope
+        run: |
+          git fetch origin main
+          changed=$(git diff --name-only origin/main...HEAD)
+          printf '%s\n' "$changed"
+          unexpected=$(printf '%s\n' "$changed" | grep -vE '^(src/pages/ProgramFinderPage\.tsx|src/test/program-finder-red-safety\.test\.tsx|src/test/programs-deep-link\.test\.tsx|\.github/workflows/p03-validation\.yml)$' || true)
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected P03 files:"
+            echo "$unexpected"
+            exit 1
+          fi
+
+      - name: Clean install
+        run: npm ci --no-audit --no-fund
+
+      - name: Run full test suite
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
