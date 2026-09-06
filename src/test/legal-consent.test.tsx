@@ -1,6 +1,5 @@
 /**
- * P14 — Legal routes, footer legal navigation, consent manager.
- * No checkout, no payment, no analytics/marketing script is introduced.
+ * Legal routes, footer legal navigation, consent manager and privacy inventory.
  */
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
@@ -48,7 +47,12 @@ import CookiesPage from "@/pages/CookiesPage";
 import MedicalDisclaimerPage from "@/pages/MedicalDisclaimerPage";
 import { legalDocuments, allDocumentsAreDraft } from "@/legal/documents";
 import { legalConfig, missingLegalFields } from "@/legal/legalConfig";
-import { HEALTH_DATA_COLLECTED } from "@/legal/privacyInventory";
+import {
+  DETAILED_HEALTH_ANSWERS_PERSISTED,
+  HEALTH_DATA_COLLECTED,
+  HEALTH_DATA_PROCESSED,
+  processingActivities,
+} from "@/legal/privacyInventory";
 
 const LangSwitch = () => {
   const { setLang } = useI18n();
@@ -149,10 +153,27 @@ describe("legal routes", () => {
     Object.values(legalDocuments).forEach((d) => expect(d.status).toBe("draft"));
   });
 
-  it("states that no health data is collected", () => {
-    expect(HEALTH_DATA_COLLECTED).toBe(false);
+  it("accurately distinguishes health-data processing from persistent detailed answers", () => {
+    expect(HEALTH_DATA_PROCESSED).toBe(true);
+    expect(HEALTH_DATA_COLLECTED).toBe(true);
+    expect(DETAILED_HEALTH_ANSWERS_PERSISTED).toBe(false);
+
+    const ids = processingActivities.map((activity) => activity.id);
+    expect(ids).toEqual(expect.arrayContaining([
+      "program-finder",
+      "checkout-safety",
+      "orders",
+      "payments",
+      "entitlements",
+      "programme-progress",
+      "admin",
+    ]));
+
     renderRoute("/privacy");
     expect(screen.getByRole("heading", { level: 1, name: "Politique de confidentialité" })).toBeInTheDocument();
+    expect(screen.getByText("Program Finder et orientation non diagnostique")).toBeInTheDocument();
+    expect(screen.getByText("Paiement Stripe")).toBeInTheDocument();
+    expect(screen.getByText("Enrollment et progression thérapeutique")).toBeInTheDocument();
   });
 
   it("does not introduce checkout or payment", () => {
@@ -344,7 +365,6 @@ describe("necessary functionality after rejecting optional storage", () => {
     expect(screen.getByTestId("ids").textContent).toBe("[1]");
     expect(window.localStorage.getItem(CART_STORAGE_KEY)).toBe("[1]");
     expect(screen.getByTestId("necessary").textContent).toBe("true");
-    // Auth persistence is untouched by consent: no consent gate wraps the client.
     expect(supabaseMocks.getSupabaseClient).not.toThrow();
   });
 });
