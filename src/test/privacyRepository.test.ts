@@ -67,22 +67,26 @@ describe("privacyRepository", () => {
     expect(rpc).toHaveBeenCalledWith("generate_my_privacy_export", { p_request_id: "request-1" });
   });
 
-  it("invokes only the privacy-erasure edge function for account erasure", async () => {
+  it("invokes the erasure edge function then clears the local Supabase session", async () => {
     const invoke = vi.fn().mockResolvedValue({ data: { ok: true }, error: null });
-    mocks.getSupabaseClient.mockReturnValue({ functions: { invoke } });
+    const signOut = vi.fn().mockResolvedValue({ error: null });
+    mocks.getSupabaseClient.mockReturnValue({ functions: { invoke }, auth: { signOut } });
 
     expect(await executeOwnPrivacyErasure("request-1")).toEqual({ completed: true, error: null });
     expect(invoke).toHaveBeenCalledWith("privacy-erasure", { body: { requestId: "request-1" } });
+    expect(signOut).toHaveBeenCalledWith({ scope: "local" });
   });
 
-  it("fails closed when erasure is blocked or Supabase is unavailable", async () => {
-    const invoke = vi.fn().mockResolvedValue({
-      data: { ok: false, error: "privacy_erasure_blocked" },
-      error: null,
-    });
-    mocks.getSupabaseClient.mockReturnValue({ functions: { invoke } });
-    expect(await executeOwnPrivacyErasure("request-1")).toEqual({ completed: false, error: "privacy.erasureBlocked" });
+  it("does not attempt local sign-out when server-side erasure is blocked", async () => {
+    const invoke = vi.fn().mockResolvedValue({ data: { ok: false, error: "privacy_erasure_blocked" }, error: null });
+    const signOut = vi.fn();
+    mocks.getSupabaseClient.mockReturnValue({ functions: { invoke }, auth: { signOut } });
 
+    expect(await executeOwnPrivacyErasure("request-1")).toEqual({ completed: false, error: "privacy.erasureBlocked" });
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when Supabase is unavailable", async () => {
     mocks.getSupabaseClient.mockReturnValue(null);
     expect(await createPrivacyErasureRequest()).toEqual({ request: null, error: "privacy.unavailable" });
     expect(await executeOwnPrivacyErasure("request-1")).toEqual({ completed: false, error: "privacy.unavailable" });
