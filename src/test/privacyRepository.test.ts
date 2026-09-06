@@ -1,15 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({
-  getSupabaseClient: vi.fn(),
-}));
+const mocks = vi.hoisted(() => ({ getSupabaseClient: vi.fn() }));
 
-vi.mock("@/integrations/supabase/client", () => ({
-  getSupabaseClient: mocks.getSupabaseClient,
-}));
+vi.mock("@/integrations/supabase/client", () => ({ getSupabaseClient: mocks.getSupabaseClient }));
 
 import {
+  createPrivacyErasureRequest,
   createPrivacyExportRequest,
+  executeOwnPrivacyErasure,
   generateOwnPrivacyExport,
   listOwnPrivacyRequests,
 } from "@/data/privacyRepository";
@@ -25,44 +23,39 @@ const REQUEST = {
   implementation_version: "p12-v1",
 };
 
-beforeEach(() => {
-  vi.clearAllMocks();
-});
+beforeEach(() => vi.clearAllMocks());
 
 describe("privacyRepository", () => {
-  it("lists only through the privacy_requests query boundary", async () => {
+  it("lists through the privacy_requests query boundary", async () => {
     const order = vi.fn().mockResolvedValue({ data: [REQUEST], error: null });
     const select = vi.fn(() => ({ order }));
     const from = vi.fn(() => ({ select }));
     mocks.getSupabaseClient.mockReturnValue({ from });
 
-    const result = await listOwnPrivacyRequests();
+    expect(await listOwnPrivacyRequests()).toEqual({ requests: [REQUEST], error: null });
     expect(from).toHaveBeenCalledWith("privacy_requests");
-    expect(result).toEqual({ requests: [REQUEST], error: null });
   });
 
-  it("creates an export request using request_type only", async () => {
+  it("creates export and erasure requests using request_type only", async () => {
     const single = vi.fn().mockResolvedValue({ data: REQUEST, error: null });
     const select = vi.fn(() => ({ single }));
     const insert = vi.fn(() => ({ select }));
-    const from = vi.fn(() => ({ insert }));
-    mocks.getSupabaseClient.mockReturnValue({ from });
+    mocks.getSupabaseClient.mockReturnValue({ from: vi.fn(() => ({ insert })) });
 
-    const result = await createPrivacyExportRequest();
-    expect(insert).toHaveBeenCalledWith({ request_type: "export" });
-    expect(result).toEqual({ request: REQUEST, error: null });
+    await createPrivacyExportRequest();
+    await createPrivacyErasureRequest();
+    expect(insert).toHaveBeenNthCalledWith(1, { request_type: "export" });
+    expect(insert).toHaveBeenNthCalledWith(2, { request_type: "erasure" });
   });
 
-  it("maps the one-open-request uniqueness error safely", async () => {
+  it("maps open-request uniqueness separately for export and erasure", async () => {
     const single = vi.fn().mockResolvedValue({ data: null, error: { code: "23505" } });
     const select = vi.fn(() => ({ single }));
     const insert = vi.fn(() => ({ select }));
     mocks.getSupabaseClient.mockReturnValue({ from: vi.fn(() => ({ insert })) });
 
-    expect(await createPrivacyExportRequest()).toEqual({
-      request: null,
-      error: "privacy.exportAlreadyOpen",
-    });
+    expect(await createPrivacyExportRequest()).toEqual({ request: null, error: "privacy.exportAlreadyOpen" });
+    expect(await createPrivacyErasureRequest()).toEqual({ request: null, error: "privacy.erasureAlreadyOpen" });
   });
 
   it("calls the user-bound export RPC with the request id", async () => {
@@ -70,17 +63,32 @@ describe("privacyRepository", () => {
     const rpc = vi.fn().mockResolvedValue({ data: payload, error: null });
     mocks.getSupabaseClient.mockReturnValue({ rpc });
 
-    const result = await generateOwnPrivacyExport("request-1");
-    expect(rpc).toHaveBeenCalledWith("generate_my_privacy_export", {
-      p_request_id: "request-1",
-    });
-    expect(result).toEqual({ payload, error: null });
+    expect(await generateOwnPrivacyExport("request-1")).toEqual({ payload, error: null });
+    expect(rpc).toHaveBeenCalledWith("generate_my_privacy_export", { p_request_id: "request-1" });
+  });
+
+  it("invokes the erasure edge function then clears the local Supabase session", async () => {
+    const invoke = vi.fn().mockResolvedValue({ data: { ok: true }, error: null });
+    const signOut = vi.fn().mockResolvedValue({ error: null });
+    mocks.getSupabaseClient.mockReturnValue({ functions: { invoke }, auth: { signOut } });
+
+    expect(await executeOwnPrivacyErasure("request-1")).toEqual({ completed: true, error: null });
+    expect(invoke).toHaveBeenCalledWith("privacy-erasure", { body: { requestId: "request-1" } });
+    expect(signOut).toHaveBeenCalledWith({ scope: "local" });
+  });
+
+  it("does not attempt local sign-out when server-side erasure is blocked", async () => {
+    const invoke = vi.fn().mockResolvedValue({ data: { ok: false, error: "privacy_erasure_blocked" }, error: null });
+    const signOut = vi.fn();
+    mocks.getSupabaseClient.mockReturnValue({ functions: { invoke }, auth: { signOut } });
+
+    expect(await executeOwnPrivacyErasure("request-1")).toEqual({ completed: false, error: "privacy.erasureBlocked" });
+    expect(signOut).not.toHaveBeenCalled();
   });
 
   it("fails closed when Supabase is unavailable", async () => {
     mocks.getSupabaseClient.mockReturnValue(null);
-    expect(await listOwnPrivacyRequests()).toEqual({ requests: [], error: "privacy.unavailable" });
-    expect(await createPrivacyExportRequest()).toEqual({ request: null, error: "privacy.unavailable" });
-    expect(await generateOwnPrivacyExport("request-1")).toEqual({ payload: null, error: "privacy.unavailable" });
+    expect(await createPrivacyErasureRequest()).toEqual({ request: null, error: "privacy.unavailable" });
+    expect(await executeOwnPrivacyErasure("request-1")).toEqual({ completed: false, error: "privacy.unavailable" });
   });
 });

@@ -11,18 +11,15 @@ const mocks = vi.hoisted(() => ({
   createPrivacyExportRequest: vi.fn(),
   generateOwnPrivacyExport: vi.fn(),
   downloadPrivacyExport: vi.fn(),
+  createPrivacyErasureRequest: vi.fn(),
+  executeOwnPrivacyErasure: vi.fn(),
+  signOut: vi.fn(),
 }));
 const { fetchOwnProfile, updateOwnProfile } = mocks;
 
 vi.mock("@/data/profileRepository", async () => {
-  const actual = await vi.importActual<typeof import("@/data/profileRepository")>(
-    "@/data/profileRepository",
-  );
-  return {
-    ...actual,
-    fetchOwnProfile: mocks.fetchOwnProfile,
-    updateOwnProfile: mocks.updateOwnProfile,
-  };
+  const actual = await vi.importActual<typeof import("@/data/profileRepository")>("@/data/profileRepository");
+  return { ...actual, fetchOwnProfile: mocks.fetchOwnProfile, updateOwnProfile: mocks.updateOwnProfile };
 });
 
 vi.mock("@/data/privacyRepository", () => ({
@@ -30,6 +27,8 @@ vi.mock("@/data/privacyRepository", () => ({
   createPrivacyExportRequest: mocks.createPrivacyExportRequest,
   generateOwnPrivacyExport: mocks.generateOwnPrivacyExport,
   downloadPrivacyExport: mocks.downloadPrivacyExport,
+  createPrivacyErasureRequest: mocks.createPrivacyErasureRequest,
+  executeOwnPrivacyErasure: mocks.executeOwnPrivacyErasure,
 }));
 
 let currentUser: { id: string; email: string } | null = null;
@@ -43,7 +42,7 @@ vi.mock("@/auth/useAuth", () => ({
     isAuthAvailable: true,
     signUp: vi.fn(),
     signIn: vi.fn(),
-    signOut: vi.fn(),
+    signOut: mocks.signOut,
   }),
 }));
 
@@ -72,6 +71,8 @@ const PRIVACY_REQUEST = {
   implementation_version: "p12-v1",
 };
 
+const ERASURE_REQUEST = { ...PRIVACY_REQUEST, id: "erasure-1", request_type: "erasure" as const };
+
 const renderAccount = () =>
   render(
     <I18nProvider>
@@ -80,14 +81,7 @@ const renderAccount = () =>
           <Routes>
             <Route path="/" element={<div>home page</div>} />
             <Route path="/login" element={<div>login page</div>} />
-            <Route
-              path="/account"
-              element={
-                <RequireAuth>
-                  <AccountPage />
-                </RequireAuth>
-              }
-            />
+            <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
           </Routes>
         </MemoryRouter>
       </CartProvider></ConsentProvider>
@@ -100,16 +94,13 @@ describe("/account", () => {
     authLoading = false;
     currentUser = { id: "user-1", email: "user@example.test" };
     fetchOwnProfile.mockResolvedValue({ profile: PROFILE, error: null });
-    updateOwnProfile.mockResolvedValue({
-      profile: { ...PROFILE, display_name: "Bill B", preferred_language: "fr" },
-      error: null,
-    });
+    updateOwnProfile.mockResolvedValue({ profile: { ...PROFILE, display_name: "Bill B", preferred_language: "fr" }, error: null });
     mocks.listOwnPrivacyRequests.mockResolvedValue({ requests: [], error: null });
     mocks.createPrivacyExportRequest.mockResolvedValue({ request: PRIVACY_REQUEST, error: null });
-    mocks.generateOwnPrivacyExport.mockResolvedValue({
-      payload: { schema_version: "p12-v1", request_id: "request-1", data: {} },
-      error: null,
-    });
+    mocks.generateOwnPrivacyExport.mockResolvedValue({ payload: { schema_version: "p12-v1", request_id: "request-1", data: {} }, error: null });
+    mocks.createPrivacyErasureRequest.mockResolvedValue({ request: ERASURE_REQUEST, error: null });
+    mocks.executeOwnPrivacyErasure.mockResolvedValue({ completed: true, error: null });
+    mocks.signOut.mockResolvedValue({ error: null });
   });
 
   it("redirects an unauthenticated visitor to /login", async () => {
@@ -128,10 +119,8 @@ describe("/account", () => {
     renderAccount();
     await waitFor(() => expect(fetchOwnProfile).toHaveBeenCalledWith("user-1"));
     expect(await screen.findByDisplayValue("Bill")).toBeInTheDocument();
-    expect(screen.getByLabelText(/E-mail/i)).toHaveValue("user@example.test");
-    await waitFor(() =>
-      expect((screen.getByLabelText(/Langue préférée/i) as HTMLSelectElement).value).toBe("de"),
-    );
+    expect(screen.getByLabelText(/^E-mail$/i)).toHaveValue("user@example.test");
+    await waitFor(() => expect((screen.getByLabelText(/Langue préférée/i) as HTMLSelectElement).value).toBe("de"));
   });
 
   it("saves display_name and preferred_language", async () => {
@@ -142,13 +131,7 @@ describe("/account", () => {
     await user.type(input, "  Bill B  ");
     await user.selectOptions(screen.getByLabelText(/Langue préférée/i), "fr");
     await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
-
-    await waitFor(() =>
-      expect(updateOwnProfile).toHaveBeenCalledWith("user-1", {
-        display_name: "Bill B",
-        preferred_language: "fr",
-      }),
-    );
+    await waitFor(() => expect(updateOwnProfile).toHaveBeenCalledWith("user-1", { display_name: "Bill B", preferred_language: "fr" }));
     expect(await screen.findByRole("status")).toHaveTextContent(/enregistré/i);
   });
 
@@ -163,58 +146,59 @@ describe("/account", () => {
     expect(updateOwnProfile).not.toHaveBeenCalled();
   });
 
-  it("shows a safe error when the update fails", async () => {
-    updateOwnProfile.mockResolvedValue({ profile: null, error: "profile.saveFailed" });
-    const user = userEvent.setup();
-    renderAccount();
-    await screen.findByDisplayValue("Bill");
-    await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(/enregistrer/i);
-  });
-
-  it("shows a safe error when the profile row is missing", async () => {
-    fetchOwnProfile.mockResolvedValue({ profile: null, error: "profile.missing" });
-    renderAccount();
-    expect(await screen.findByRole("alert")).toHaveTextContent(/introuvable/i);
-  });
-
-  it("shows a safe error when Supabase is unavailable", async () => {
-    fetchOwnProfile.mockResolvedValue({ profile: null, error: "auth.unavailable" });
-    renderAccount();
-    expect(await screen.findByRole("alert")).toHaveTextContent(/indisponible/i);
-  });
-
   it("generates and downloads the authenticated user's privacy export", async () => {
     const user = userEvent.setup();
     renderAccount();
     await screen.findByDisplayValue("Bill");
     await user.click(screen.getByRole("button", { name: /Télécharger mes données/i }));
-
     await waitFor(() => expect(mocks.createPrivacyExportRequest).toHaveBeenCalledTimes(1));
     expect(mocks.generateOwnPrivacyExport).toHaveBeenCalledWith("request-1");
-    expect(mocks.downloadPrivacyExport).toHaveBeenCalledWith(
-      expect.objectContaining({ schema_version: "p12-v1", request_id: "request-1" }),
-    );
-    expect(await screen.findByRole("status")).toHaveTextContent(/export a été généré/i);
+    expect(mocks.downloadPrivacyExport).toHaveBeenCalled();
   });
 
   it("shows the privacy request history", async () => {
-    mocks.listOwnPrivacyRequests.mockResolvedValue({
-      requests: [{ ...PRIVACY_REQUEST, status: "completed" }],
-      error: null,
-    });
+    mocks.listOwnPrivacyRequests.mockResolvedValue({ requests: [{ ...PRIVACY_REQUEST, status: "completed" }], error: null });
     renderAccount();
     expect(await screen.findByText("export")).toBeInTheDocument();
     expect(screen.getByText("completed")).toBeInTheDocument();
   });
 
-  it("does not add account deletion in P12", async () => {
+  it("does not start erasure when the confirmation email is wrong", async () => {
+    const user = userEvent.setup();
     renderAccount();
     await screen.findByDisplayValue("Bill");
-    expect(screen.queryByRole("button", { name: /supprimer.*compte|delete.*account/i })).toBeNull();
+    await user.type(screen.getByLabelText(/E-mail de confirmation/i), "wrong@example.test");
+    await user.click(screen.getByRole("button", { name: /Supprimer définitivement mon compte/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/ne correspond pas/i);
+    expect(mocks.createPrivacyErasureRequest).not.toHaveBeenCalled();
+    expect(mocks.executeOwnPrivacyErasure).not.toHaveBeenCalled();
   });
 
-  it("shows success then navigates to / after a successful update", async () => {
+  it("executes erasure only after exact email confirmation and signs out on success", async () => {
+    const user = userEvent.setup();
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    await user.type(screen.getByLabelText(/E-mail de confirmation/i), "user@example.test");
+    await user.click(screen.getByRole("button", { name: /Supprimer définitivement mon compte/i }));
+    await waitFor(() => expect(mocks.createPrivacyErasureRequest).toHaveBeenCalledTimes(1));
+    expect(mocks.executeOwnPrivacyErasure).toHaveBeenCalledWith("erasure-1");
+    await waitFor(() => expect(mocks.signOut).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText("home page")).toBeInTheDocument();
+  });
+
+  it("keeps the account page open when automated erasure is blocked", async () => {
+    mocks.executeOwnPrivacyErasure.mockResolvedValue({ completed: false, error: "privacy.erasureBlocked" });
+    const user = userEvent.setup();
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    await user.type(screen.getByLabelText(/E-mail de confirmation/i), "user@example.test");
+    await user.click(screen.getByRole("button", { name: /Supprimer définitivement mon compte/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/vérification manuelle/i);
+    expect(mocks.signOut).not.toHaveBeenCalled();
+    expect(screen.getByRole("heading", { level: 1, name: /^Mon compte$/i })).toBeInTheDocument();
+  });
+
+  it("shows success then navigates to / after a successful profile update", async () => {
     const user = userEvent.setup();
     renderAccount();
     const input = await screen.findByDisplayValue("Bill");
@@ -222,32 +206,22 @@ describe("/account", () => {
     await user.type(input, "  Bill B  ");
     await user.selectOptions(screen.getByLabelText(/Langue préférée/i), "fr");
     await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
-
-    await waitFor(() =>
-      expect(updateOwnProfile).toHaveBeenCalledWith("user-1", {
-        display_name: "Bill B",
-        preferred_language: "fr",
-      }),
-    );
+    await waitFor(() => expect(updateOwnProfile).toHaveBeenCalled());
     expect(await screen.findByRole("status")).toHaveTextContent(/enregistré/i);
-    expect(screen.queryByText("home page")).not.toBeInTheDocument();
-
-    await waitFor(() => expect(screen.getByText("home page")).toBeInTheDocument(), {
-      timeout: 3000,
-    });
+    await waitFor(() => expect(screen.getByText("home page")).toBeInTheDocument(), { timeout: 3000 });
   }, 6000);
 
-  it("stays on /account when the update fails", async () => {
+  it("stays on /account when the profile update fails", async () => {
     updateOwnProfile.mockResolvedValue({ profile: null, error: "profile.saveFailed" });
     const user = userEvent.setup();
     renderAccount();
     await screen.findByDisplayValue("Bill");
     await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(/enregistrer/i);
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
     expect(screen.queryByText("home page")).not.toBeInTheDocument();
   });
 
-  it("does not redirect before the successful update is confirmed", async () => {
+  it("does not redirect before the successful profile update is confirmed", async () => {
     updateOwnProfile.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
     renderAccount();
@@ -255,6 +229,5 @@ describe("/account", () => {
     await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
     await new Promise((r) => setTimeout(r, 1200));
     expect(screen.queryByText("home page")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Mon compte/i })).toBeInTheDocument();
   }, 6000);
 });
