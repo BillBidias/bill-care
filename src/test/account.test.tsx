@@ -7,6 +7,10 @@ import React from "react";
 const mocks = vi.hoisted(() => ({
   fetchOwnProfile: vi.fn(),
   updateOwnProfile: vi.fn(),
+  listOwnPrivacyRequests: vi.fn(),
+  createPrivacyExportRequest: vi.fn(),
+  generateOwnPrivacyExport: vi.fn(),
+  downloadPrivacyExport: vi.fn(),
 }));
 const { fetchOwnProfile, updateOwnProfile } = mocks;
 
@@ -21,6 +25,12 @@ vi.mock("@/data/profileRepository", async () => {
   };
 });
 
+vi.mock("@/data/privacyRepository", () => ({
+  listOwnPrivacyRequests: mocks.listOwnPrivacyRequests,
+  createPrivacyExportRequest: mocks.createPrivacyExportRequest,
+  generateOwnPrivacyExport: mocks.generateOwnPrivacyExport,
+  downloadPrivacyExport: mocks.downloadPrivacyExport,
+}));
 
 let currentUser: { id: string; email: string } | null = null;
 let authLoading = false;
@@ -49,6 +59,17 @@ const PROFILE = {
   preferred_language: "de" as const,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
+};
+
+const PRIVACY_REQUEST = {
+  id: "request-1",
+  request_type: "export" as const,
+  status: "requested" as const,
+  requested_at: "2026-09-06T10:00:00Z",
+  processing_started_at: null,
+  completed_at: null,
+  outcome_category: null,
+  implementation_version: "p12-v1",
 };
 
 const renderAccount = () =>
@@ -81,6 +102,12 @@ describe("/account", () => {
     fetchOwnProfile.mockResolvedValue({ profile: PROFILE, error: null });
     updateOwnProfile.mockResolvedValue({
       profile: { ...PROFILE, display_name: "Bill B", preferred_language: "fr" },
+      error: null,
+    });
+    mocks.listOwnPrivacyRequests.mockResolvedValue({ requests: [], error: null });
+    mocks.createPrivacyExportRequest.mockResolvedValue({ request: PRIVACY_REQUEST, error: null });
+    mocks.generateOwnPrivacyExport.mockResolvedValue({
+      payload: { schema_version: "p12-v1", request_id: "request-1", data: {} },
       error: null,
     });
   });
@@ -157,6 +184,36 @@ describe("/account", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(/indisponible/i);
   });
 
+  it("generates and downloads the authenticated user's privacy export", async () => {
+    const user = userEvent.setup();
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    await user.click(screen.getByRole("button", { name: /Télécharger mes données/i }));
+
+    await waitFor(() => expect(mocks.createPrivacyExportRequest).toHaveBeenCalledTimes(1));
+    expect(mocks.generateOwnPrivacyExport).toHaveBeenCalledWith("request-1");
+    expect(mocks.downloadPrivacyExport).toHaveBeenCalledWith(
+      expect.objectContaining({ schema_version: "p12-v1", request_id: "request-1" }),
+    );
+    expect(await screen.findByRole("status")).toHaveTextContent(/export a été généré/i);
+  });
+
+  it("shows the privacy request history", async () => {
+    mocks.listOwnPrivacyRequests.mockResolvedValue({
+      requests: [{ ...PRIVACY_REQUEST, status: "completed" }],
+      error: null,
+    });
+    renderAccount();
+    expect(await screen.findByText("export")).toBeInTheDocument();
+    expect(screen.getByText("completed")).toBeInTheDocument();
+  });
+
+  it("does not add account deletion in P12", async () => {
+    renderAccount();
+    await screen.findByDisplayValue("Bill");
+    expect(screen.queryByRole("button", { name: /supprimer.*compte|delete.*account/i })).toBeNull();
+  });
+
   it("shows success then navigates to / after a successful update", async () => {
     const user = userEvent.setup();
     renderAccount();
@@ -172,11 +229,9 @@ describe("/account", () => {
         preferred_language: "fr",
       }),
     );
-    // Success message shown immediately; still on /account (no home text yet).
     expect(await screen.findByRole("status")).toHaveTextContent(/enregistré/i);
     expect(screen.queryByText("home page")).not.toBeInTheDocument();
 
-    // After ~1s delay, internal React Router navigation to / occurs.
     await waitFor(() => expect(screen.getByText("home page")).toBeInTheDocument(), {
       timeout: 3000,
     });
@@ -193,19 +248,13 @@ describe("/account", () => {
   });
 
   it("does not redirect before the successful update is confirmed", async () => {
-    // Keep the update promise pending forever so the DB never "confirms".
     updateOwnProfile.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
     renderAccount();
     await screen.findByDisplayValue("Bill");
     await user.click(screen.getByRole("button", { name: /Enregistrer/i }));
-
-    // While the update promise is still pending (not yet confirmed),
-    // the 1s redirect timer is never scheduled, so navigation never occurs.
-    // Give it more than the redirect delay to prove no early navigation happens.
     await new Promise((r) => setTimeout(r, 1200));
     expect(screen.queryByText("home page")).not.toBeInTheDocument();
-    // Still on the account page: the account heading is present.
     expect(screen.getByRole("heading", { name: /Mon compte/i })).toBeInTheDocument();
   }, 6000);
 });
