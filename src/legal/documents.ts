@@ -1,11 +1,9 @@
 /**
- * P14 — Legal document version metadata.
+ * Legal document version metadata.
  *
  * Status lifecycle: DRAFT → BUSINESS INPUT → LEGAL REVIEW → PRODUCTION APPROVAL.
- * Generated content is ALWAYS `draft`. Only a real, explicitly supplied
- * professional/business approval may ever change a status here.
- * These versions will later be referenced by trusted checkout acceptance
- * records (server-side, not in P14).
+ * Generated or reconciled content remains `draft`. Only explicit professional /
+ * business approval may change a status here.
  */
 
 export type LegalDocumentStatus = "draft" | "reviewed" | "approved";
@@ -21,21 +19,21 @@ export type LegalDocumentKey =
 export type LegalDocumentMeta = {
   key: LegalDocumentKey;
   version: string;
-  /** ISO date the version was authored. Not an approval date. */
+  /** ISO date the draft version was authored/reconciled. Not an approval date. */
   effectiveDate: string;
   status: LegalDocumentStatus;
 };
 
 export const legalDocuments: Record<LegalDocumentKey, LegalDocumentMeta> = {
   impressum: { key: "impressum", version: "0.1.0", effectiveDate: "2026-08-23", status: "draft" },
-  privacy: { key: "privacy", version: "0.1.0", effectiveDate: "2026-08-23", status: "draft" },
-  terms: { key: "terms", version: "0.1.0", effectiveDate: "2026-08-23", status: "draft" },
-  withdrawal: { key: "withdrawal", version: "0.1.0", effectiveDate: "2026-08-23", status: "draft" },
+  privacy: { key: "privacy", version: "0.2.0", effectiveDate: "2026-09-06", status: "draft" },
+  terms: { key: "terms", version: "0.2.0", effectiveDate: "2026-09-06", status: "draft" },
+  withdrawal: { key: "withdrawal", version: "0.2.0", effectiveDate: "2026-09-06", status: "draft" },
   cookies: { key: "cookies", version: "0.1.0", effectiveDate: "2026-08-23", status: "draft" },
   medicalDisclaimer: {
     key: "medicalDisclaimer",
-    version: "0.1.0",
-    effectiveDate: "2026-08-23",
+    version: "0.2.0",
+    effectiveDate: "2026-09-06",
     status: "draft",
   },
 };
