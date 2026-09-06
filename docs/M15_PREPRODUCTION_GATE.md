@@ -2,388 +2,387 @@
 
 Status: **STOP — not production-ready for commercial/clinical release**
 
-This gate records the verified state of Dein Digital Physio through P08. It does not publish clinical content and does not authorize commercial/clinical release.
+This gate records the verified project state through **P15**. It does not publish clinical content and does not authorize commercial or clinical release.
 
-Reference state:
+Reference state before P15 merge:
 
-- Source of Truth: **v1.3 MASTER**
+- Source of Truth: **v1.3 MASTER** — known to require later reconciliation with P06–P15.
 - Repository: `BillBidias/bill-care`
 - Reference branch: `main`
-- Reference commit after P06: `39191b3eb99dcb7a08cab4d0f7661c34975bd605`
+- Reference commit after P13: `e4eb06984ef52d49299b05ed878aae38f8ee6d95`
 
-Status vocabulary used below:
+Status vocabulary:
 
-- **DONE** — implemented and no longer an open task.
+- **DONE** — implemented for the validated scope.
 - **PASS** — verified for the current scope.
-- **PARTIAL** — foundation exists, but launch requirements remain.
-- **OPEN** — still requires action.
-- **BLOCKED** — cannot be completed without required external/owner/clinical/legal input.
-- **DEFERRED** — intentionally postponed by product decision.
+- **PARTIAL** — foundation exists, launch requirements remain.
+- **OPEN** — action still required.
+- **BLOCKED** — external/owner/clinical/legal input required.
+- **DEFERRED** — intentionally postponed.
 
 ## 1. Technical foundation — PASS with remaining launch hardening
 
-Current verified foundation:
+Current verified foundation includes:
 
-- React/Vite patient application builds through the GitHub → Vercel pipeline.
-- Patient routes `/patient`, `/patient/session/:enrollmentId` and `/account` require authentication.
-- `/admin` requires server-verified admin access.
-- Entitlement remains the authoritative programme-access gate.
-- Enrollment is separate from entitlement.
-- Progress is based on completed prescribed exercises, not page views or logins.
-- Patient content reads remain constrained by publication/entitlement rules.
-- Conservative Vercel security headers remain part of the current foundation.
-- Existing Supabase security/performance hardening migrations remain in place.
+- React/Vite application with protected Patient and Account routes.
+- server-verified Admin access and RBAC.
+- Supabase Auth and RLS.
+- entitlement as authoritative programme-access gate.
+- enrollment separate from entitlement.
+- patient progress based on completed prescribed exercises.
+- versioned Supabase migrations.
+- trusted server-side pricing/payment chain.
+- DE / FR / EN foundations.
 
 ### P01 — Program Finder RED safety — DONE / PASS
 
-- GREEN keeps the normal recommendation flow.
-- AMBER keeps the existing guarded recommendation flow.
+- GREEN retains normal recommendation flow.
+- AMBER retains guarded flow.
 - RED blocks automatic programme recommendation/progression.
 - RED preserves professional/medical referral messaging.
-- P01 was tested and merged into `main`.
 
 ### P02 — npm lockfile consistency — DONE / PASS
 
-- `package.json` / `package-lock.json` synchronization debt is closed.
-- `npm ci`, tests and build were validated in P02.
-- No source-code behavior was changed by P02.
+- `package.json` / `package-lock.json` synchronization debt closed.
+- `npm ci`, tests and build validated for P02.
 
 ### P03 — Stripe checkout redirect security — DONE / PASS
 
-Stripe browser redirects are restricted to the canonical Checkout host boundary:
+Browser redirects to Stripe require:
 
-- HTTPS required;
-- exact hostname `checkout.stripe.com` required;
-- non-default ports rejected;
-- embedded username/password rejected;
-- lookalike/suffix domains rejected.
+- HTTPS;
+- exact `checkout.stripe.com` hostname;
+- no non-default port;
+- no embedded credentials;
+- no lookalike/suffix host.
 
-P03 validation included 14 test files and 117 passing tests, plus a successful build.
+### P04 — SECURITY DEFINER RPC audit — DONE / PASS
 
-### P04 — authenticated SECURITY DEFINER RPC audit — DONE / PASS
-
-The manual audit previously listed as an open technical item has been completed.
-
-Verified during P04:
-
-- 34 custom `SECURITY DEFINER` functions were reviewed across `public` / `app_private`;
-- no custom function was effectively executable by `PUBLIC` or `anon` in the audited state;
-- authenticated RPC exposure was reviewed function by function;
-- Admin RPCs bind authorization to the actual caller and RBAC permissions;
-- patient/progress RPCs bind access to the current user and entitlement/safety rules;
-- payment mutation RPCs remain server/service-role only;
-- no critical privilege bypass was identified.
-
-P04 was audit-only and made no repository/database change.
+- custom RPC exposure audited.
+- no effective custom `PUBLIC`/`anon` execution identified in audited state.
+- Admin RPC authorization and patient/user boundaries reviewed.
+- payment mutation RPCs remain service-role only.
 
 ### P05 — Auth & RPC hardening — DONE / PASS
 
-P05 implemented least-privilege hardening through migration:
+- least-privilege function EXECUTE defaults hardened for current postgres-owned functions.
+- internal helper exposure reduced.
+- RLS-required helpers preserved.
 
-`supabase/migrations/20260905223039_p05_auth_rpc_hardening.sql`
+Follow-up remains for functions created under other owners, especially `supabase_admin` default ACL behavior.
 
-Key effects:
+### P06 — Preproduction gate reconciliation — DONE
 
-- future `postgres`-owned functions no longer inherit implicit `PUBLIC` EXECUTE;
-- `anon` and `authenticated` no longer receive automatic EXECUTE on future functions in `public` / `app_private` through the hardened defaults;
-- direct authenticated EXECUTE was removed from internal helpers that did not require client access:
-  - `app_private.admin_can_view_customer(uuid, uuid)`;
-  - `app_private.admin_has_permission(uuid, text)`;
-  - `app_private.enrollment_progress_counts(uuid)`;
-- entitlement helpers required directly by RLS remain executable where necessary.
+Documentation-only reconciliation of P01–P05.
 
-Negative authorization checks confirmed that an ordinary authenticated user did not gain Admin access and could not invoke Stripe server-only mutation RPCs.
+### P07 — Supabase Auth leaked-password validation — DEFERRED FINAL STEP
 
-### P06 — Preproduction gate reconciliation — DONE / PASS
+Verified:
 
-P06 reconciled this document with the validated P01–P05 implementation state.
+- active backend `bill-care-dev`.
+- organization currently Free.
+- leaked-password protection warning remains.
+- native feature requires Pro or above.
 
-It was documentation-only and changed no frontend, backend, Supabase, Stripe, package or clinical-content behavior.
+Owner-approved final sequence:
 
-### P07 — Supabase Auth security validation — AUDIT PASS / DEFERRED FINAL STEP
+1. upgrade Supabase organization to Pro;
+2. enable Leaked Password Protection;
+3. rerun Security Advisor;
+4. close only after warning is absent.
 
-P07 verified the active hosted backend `bill-care-dev` and the current application Auth foundation.
+### P08 — External font privacy gate — DONE / PASS
 
-Verified findings:
+Current frontend does not intentionally load Google Fonts from Google. Do not add a remote font provider without privacy/CSP/performance/provider review.
 
-- Supabase Security Advisor still reports `Leaked Password Protection Disabled`;
-- the Supabase organization is currently on the Free plan;
-- current Supabase documentation states leaked-password protection is available on Pro and above;
-- application registration requires a minimum password length of 8 characters;
-- Auth access is centralized through the existing Supabase Auth provider;
-- browser code uses public/publishable Supabase configuration only and does not reference `service_role`;
-- login return paths are restricted to known internal application routes;
-- Admin UX checks server-verified Admin access and does not replace backend RBAC/RLS authorization;
-- audited application policies/functions did not rely on user-editable `raw_user_meta_data`, deprecated `auth.role()`, or `auth.jwt()` authorization shortcuts.
+### P09 — Privacy & data-processing inventory audit — DONE / AUDIT
 
-No GitHub or Supabase mutation was required for P07.
+Verified that current flows process health-related information even though detailed Program Finder / checkout-safety answers are designed to remain transient.
 
-Owner decision:
+Persistent application data includes, among other things:
 
-**Leaked Password Protection is DEFERRED TO FINAL PREPRODUCTION.**
+- Auth/profile information;
+- orders and order items;
+- payment metadata;
+- entitlements;
+- programme enrollment/progress/completions;
+- Admin/audit metadata.
 
-Final required sequence:
+Legal bases, Article 9 condition, retention, recipients and transfers were not invented.
 
-1. upgrade the Supabase organization to Pro;
-2. enable Leaked Password Protection on `bill-care-dev`;
-3. rerun the Supabase Security Advisor;
-4. close the item only after the `auth_leaked_password_protection` warning is confirmed absent.
+### P10 — Privacy inventory reconciliation — DONE / PASS
 
-This deferred item does not block current development but remains mandatory before final production readiness.
+`src/legal/privacyInventory.ts` now reflects actual processing:
 
-### P08 — External font privacy gate closure — DONE / PASS
+- `HEALTH_DATA_PROCESSED = true`;
+- detailed symptom/ICD-10/safety answers are not persistently stored in audited flows;
+- purchase, entitlement, enrollment and progress may indirectly reveal a therapeutic pathway.
 
-The previous external Google Fonts privacy blocker was rechecked against the actual repository and found to be obsolete.
+### P11 — Retention, deletion & user-rights architecture — DONE
 
-Verified current state:
+Architecture separates:
 
-- `index.html` contains no Google Fonts stylesheet or preconnect request;
-- `src/index.css` contains no remote `@import` for fonts;
-- the active font variables use `Inter` with system-font fallbacks;
-- repository search found no `fonts.googleapis.com` reference;
-- repository search found no `fonts.gstatic.com` reference;
-- repository search found no active `Nunito` or `Playfair` reference.
+1. transient health/safety input;
+2. identity/profile;
+3. therapeutic usage;
+4. commerce ledger;
+5. Admin/security audit;
+6. minimal privacy-request evidence;
+7. browser-local state.
 
-Conclusion:
+No single global retention duration was invented.
 
-**The current frontend does not intentionally load Google Fonts from Google.**
+### P12 — Privacy requests & export foundation — DONE / PASS
 
-Therefore the former requirement to replace/self-host Google Fonts or preserve a Nunito / Playfair Display remote-font identity is no longer a current launch blocker.
+Implemented:
 
-Non-regression rule:
+- own privacy requests;
+- own request/event RLS;
+- server-bound JSON export of own data;
+- Account UI for export/history.
 
-Do not introduce a new remote font provider later without a fresh privacy, CSP, performance and consent/provider review.
+No public long-lived Storage export.
 
-### Technical items still OPEN before commercial/clinical release
+### P13 — Erasure orchestrator & commerce identity detachment — DONE / PASS, PRODUCTION LEGAL GATE OPEN
 
-- **DEFERRED FINAL PREPRODUCTION — Supabase Auth leaked-password protection:** upgrade to Pro, enable the feature and rerun Security Advisor before final production readiness.
-- **FOLLOW-UP — `supabase_admin` default function ACL:** current application functions are `postgres`-owned and covered by P05, but future functions created under another owner must be reviewed explicitly. Do not assume P05 globally hardens every possible future owner.
-- **OPEN — production Stripe verification:** verify the production webhook endpoint/secrets and run an approved end-to-end payment test before commercial activation.
-- **OPEN — load/performance validation:** consider additional indexes only after realistic load testing; do not add every linter-suggested index blindly.
-- **OPEN — Content-Security-Policy:** add CSP only after the final asset/provider inventory is known; do not deploy a speculative policy that breaks required services.
+Implemented:
 
-## 2. Commercial / payment gate — PARTIAL, NOT APPROVED FOR RELEASE
+- server-side erasure orchestration;
+- service-role-only destructive RPCs;
+- server-side Auth user deletion;
+- local browser session cleanup after successful erasure;
+- deletion of targeted profile/therapeutic data;
+- detachment of retained orders from live Auth identity;
+- automatic blocking for active Admin membership, pending orders or active payments.
 
-The technical checkout chain is materially implemented.
+Commerce retention remains `pending_legal_tax_review`.
 
-### Implemented technical chain — DONE
+Important P14 consequence: P13 automatic deletion of therapeutic progress must **not** be considered production-ready until legal classification determines whether German treatment-record obligations (including possible §630f BGB applicability) affect those data.
 
-For an authenticated user, the current cart can:
+### P14 — Legal classification & retention decision gate — VALIDATED
+
+Approved decisions:
+
+- **P14-D01:** MVP boundary = self-guided digital exercise programmes, non-diagnostic orientation and Safety Screening; no individualised treatment in the MVP.
+- **P14-D02:** applicability of §630f BGB = **OPEN — LEGAL REVIEW REQUIRED**.
+- **P14-D03:** preserve P13 architecture, but do not treat automatic erasure as production-ready until D02 is resolved.
+- **P14-D04:** commerce records remain identity-detached; exact retention duration requires legal/tax classification.
+- **P14-D05:** legal documents and this gate must be reconciled with actual checkout and health-data processing.
+
+### P15 — Legal documents & preproduction gate reconciliation — CURRENT PHASE
+
+P15 is limited to factual/documentary reconciliation. It does **not** approve legal texts for production and does not modify clinical, payment or Supabase authority.
+
+Reconciled draft facts:
+
+- checkout and Stripe integration are technically implemented, but commercial activation remains STOP;
+- Medical Disclaimer no longer falsely states that no health information is processed;
+- Terms no longer state that no payment system exists;
+- Withdrawal draft now distinguishes technical checkout availability from legal/commercial readiness;
+- legal document versions for Privacy, Terms, Withdrawal and Medical Disclaimer are advanced as **draft** only;
+- the Privacy page was reviewed against P10 and remains factually aligned, so no unnecessary content rewrite is required;
+- old EU ODR platform links must not be reintroduced; the platform ceased operation in 2025 and the applicable German dispute-resolution statement remains operator/legal input.
+
+## 2. Commercial / payment gate — PARTIAL, NOT APPROVED
+
+Technical chain exists for an authenticated user:
 
 1. prepare checkout safety;
-2. collect the applicable transient safety answers;
-3. require the configured safety acknowledgement;
-4. create a trusted checkout order server-side;
-5. keep the final amount server-authoritative;
-6. create a Stripe Checkout Session;
-7. redirect only to an allowed Stripe Checkout URL.
+2. collect applicable transient safety answers;
+3. require configured safety acknowledgement;
+4. create a trusted server order;
+5. keep final amount server-authoritative;
+6. create Stripe Checkout Session;
+7. redirect only to allowed Stripe Checkout destination;
+8. confirm paid state only through verified server-side Stripe processing;
+9. grant/maintain entitlement through backend authority.
 
-Server-side payment foundations remain authoritative:
+A browser redirect or success page alone never grants paid access.
 
-- Stripe webhook signature verification is server-side;
-- verified Stripe events are the source of paid status;
-- the browser cannot set an order to `paid`;
-- paid status creates/maintains entitlement through the backend foundation;
-- a browser redirect alone never unlocks programme content.
+Before commercial activation:
 
-### `/checkout/success` UX — DONE
-
-A real checkout-success page exists.
-
-It:
-
-- reads `session_id` from the Stripe return URL;
-- looks up the authenticated user's own order server-side;
-- polls briefly while webhook confirmation may still be asynchronous;
-- shows success only after authoritative order status is `paid`;
-- clears the cart only after confirmed paid status;
-- explicitly avoids premature programme access if confirmation is delayed.
-
-### Still required before commercial activation
-
-Technical implementation does **not** equal approval for commercial release.
-
-Before activation:
-
-- account/authentication remains mandatory before payment;
-- final amount must remain server-authoritative;
-- verified Stripe webhook confirmation must remain the source of paid status;
-- paid status must remain the entitlement source; browser success must never unlock content;
-- production Stripe configuration and webhook secrets must be verified;
-- one controlled end-to-end production/test-mode payment validation must be run only when checkout activation is approved;
-- withdrawal information and required express acknowledgements for immediate digital-content delivery must be legally reviewed and implemented before relying on the checkout commercially;
-- order/contract confirmation requirements must be reviewed for Germany/EU launch.
+- verify production Stripe endpoint/secrets/webhook configuration;
+- run a controlled approved E2E payment test;
+- finalize contract-formation wording and order-button requirements;
+- finalize withdrawal information;
+- implement/validate required express consent and acknowledgement for immediate digital-content delivery where applicable;
+- provide required contract confirmation on durable medium where applicable;
+- finalize price/tax presentation and consumer information;
+- complete operator/legal identity.
 
 ## 3. Legal gate — BLOCKED
 
-`src/legal/legalConfig.ts` contains required operator/legal inputs that must not be invented.
+`src/legal/legalConfig.ts` intentionally contains `REQUIRED_INPUT` values that must not be invented.
 
-Required before commercial publication:
+Required before commercial publication includes:
 
-- confirmed operator legal name and legal form;
+- legal operator name/form;
 - full business address;
 - authorized representative;
-- business contact email/phone as applicable;
-- register court/number and VAT ID where legally applicable;
-- profession/regulatory information where applicable to the actual offer/operator;
-- privacy controller/contact and competent supervisory authority;
-- hosting/processors inventory;
-- current dispute-resolution statement;
-- professional legal review of Impressum, Terms/AGB, Privacy, Withdrawal and Medical Disclaimer.
+- business contact information;
+- register court/number and VAT ID where applicable;
+- professional/regulatory information where applicable;
+- privacy controller/contact and supervisory authority;
+- verified hosting/processors/recipient inventory;
+- applicable dispute-resolution statement;
+- final professional review of Impressum, Terms/AGB, Privacy, Withdrawal and Medical Disclaimer.
 
-Legal texts must be reconciled with the actual checkout and health-data processing before commercial publication. Any text still describing checkout as inactive must be updated before a real commercial launch.
+Additional P14/P15 legal decisions still OPEN:
+
+- applicability of §§630a/630f BGB to the real service;
+- Article 6 legal bases;
+- Article 9 condition(s) for health-related processing;
+- exact retention mapping and durations;
+- mapping of commerce records to HGB/AO categories;
+- consumer digital-content contract requirements for the actual launch model;
+- final German legal master text and review of FR/EN translations.
+
+All legal documents remain **draft** until explicit professional approval.
 
 ## 4. Privacy / data-processing gate — PARTIAL
 
-Privacy by Design and data minimization remain mandatory.
+DONE / preserved:
 
-Current intended safety/checkout design keeps detailed safety answers transient and stores only the required acknowledgement proof/version/timestamp where applicable.
+- detailed Program Finder and safety answers designed as transient/non-persistent;
+- privacy inventory aligned with actual finder/safety/checkout/payment/entitlement/progress flows;
+- own privacy request foundation;
+- own JSON export;
+- server-side account erasure orchestration;
+- commerce identity detachment;
+- optional analytics/marketing consent defaults OFF in current consent model.
 
-Before launch or broader health-data processing:
+Still required:
 
-- update the privacy processing inventory to match the actual finder/safety/checkout flow;
-- verify that symptom answers, free text and clinician-provided ICD-10 values are not persisted unless a separate lawful health-data architecture is deliberately approved;
-- document the safety acknowledgement proof without unnecessarily storing detailed safety answers;
-- document payment/admin/entitlement/enrollment/progress processing activities;
-- define retention, deletion, export, recipients, legal bases and international-transfer information after legal/provider review;
-- keep analytics and marketing disabled unless explicitly integrated behind the required consent model.
-
-Cookie/consent infrastructure must remain aligned with the actual providers enabled in production.
+- final legal bases and Article 9 condition;
+- final processor/recipient and international-transfer documentation;
+- validated retention matrix;
+- legal decision on therapeutic progress / possible treatment-record retention;
+- retention scheduler only after those durations are validated;
+- final privacy notice review.
 
 ## 5. Clinical content gate — BLOCKED
 
-The technical platform may contain catalogue/programme/content foundations, but clinical publication cannot be inferred from technical availability.
+No exercise, phase, session or programme may be treated as clinically released merely because technical content structures exist.
 
-No exercise, phase, session or programme content may be moved to a patient-facing clinically released state merely to make the UI visible.
+Before clinical publication, each programme/content set requires review of at least:
 
-Before clinical publication each programme/content set requires an intentional clinical release review covering at minimum:
-
-- exercise selection and intended target;
-- starting position and movement execution;
+- intended target;
+- exercise selection and execution;
 - dosage / sets / repetitions / hold / tempo / rest;
-- variants/progression/regression where used;
-- common mistakes;
-- contraindications;
-- safety instructions and stop criteria;
-- programme sequencing and session progression;
-- translations used clinically;
-- named author/reviewer, review date and evidence/reference governance;
-- final media demonstration review when videos are produced.
-
-Any previously recorded content counts/statuses should be re-verified against the live database before being used for a release decision; this document must not treat historical counts as permanently current.
+- variants / progression / regression;
+- mistakes and safety instructions;
+- contraindications and stop criteria;
+- sequencing and progression;
+- translations;
+- named author/reviewer, date and evidence governance;
+- final media demonstration.
 
 ## 6. Safety / recommendation gate — FOUNDATION READY, CLINICAL REVIEW REQUIRED
 
-- Safety remains authoritative over recommendation and commerce.
-- RED safety outcomes must block automatic programme recommendation/start and cannot be overridden by acknowledgement.
-- Checkout safety is revalidated before a trusted order/payment begins.
-- Safety questions, wording and recommendation mappings still require clinical review before broad public clinical activation.
-- Automated guidance must never be represented as a medical diagnosis.
+- safety remains authoritative over recommendation and commerce;
+- RED blocks automatic programme recommendation/start and cannot be bypassed by acknowledgement;
+- checkout safety is revalidated before trusted order/payment creation;
+- automated guidance must never be represented as medical diagnosis;
+- clinical wording, mappings and safety rules still require clinical review before broad activation.
 
-P01 establishes the RED blocking behavior and must remain a non-regression requirement for every future phase.
+## 7. Media gate — DEFERRED
 
-## 7. Media gate — DEFERRED BY PRODUCT DECISION
+Final therapeutic video production remains separate from technical development. Placeholders do not imply clinical approval.
 
-Real final exercise-video production remains a separate product/clinical workflow.
+## 8. Security gate — PASS WITH OPEN FOLLOW-UP
 
-Development placeholders are acceptable for QA only. Final therapeutic media must not be implied to exist or be clinically approved before production and review.
+Preserve least privilege rather than artificially chasing zero linter warnings.
 
-Before final media publication:
+Open items:
 
-- content must be clinically validated;
-- demonstration technique must be reviewed;
-- language/voice/text overlays must match the validated clinical content;
-- accessibility requirements must be considered;
-- final media must be linked only to the approved programme/exercise version.
-
-## 8. Security Advisor interpretation — PASS WITH OPEN FOLLOW-UP
-
-The goal is **real least-privilege security**, not artificially achieving zero warnings.
-
-Therefore:
-
-- intentional authenticated `SECURITY DEFINER` RPCs may remain when they are the designed secure API boundary and perform their own authentication/authorization checks;
-- RLS-enabled internal tables may intentionally have no permissive client policy when direct client access is supposed to be denied;
-- do not add permissive policies merely to silence a linter/advisor warning;
-- every new RPC must receive an explicit exposure/owner/EXECUTE review.
-
-The leaked-password warning is a separate Auth configuration item and remains deferred until final preproduction because the current organization is on the Free plan.
+- final leaked-password protection after Supabase Pro upgrade;
+- `supabase_admin`/future-owner function ACL review;
+- final CSP after provider inventory;
+- load/performance validation;
+- scoped dependency security audit/remediation; do not run `npm audit fix` blindly;
+- `main` branch protection/governance remains a known follow-up.
 
 ## 9. MUST PRESERVE
 
-Future work must preserve:
-
-- B2C-first product strategy;
-- Program Finder RED blocking;
+- B2C-first strategy;
+- Safety Screening;
+- P01 RED blocking;
 - checkout RED/AMBER safety behavior;
+- detailed safety answers transient/non-persistent;
+- minimal acknowledgement proof/version/timestamp only where designed;
 - server-authoritative pricing;
-- signed/server-authoritative Stripe payment confirmation;
-- entitlement as the access gate;
-- separation of entitlement and enrollment;
-- patient ownership boundaries;
-- Auth and RLS;
+- verified server-side Stripe payment authority;
+- browser cannot mark paid;
+- entitlement access gate;
+- entitlement/enrollment separation;
+- Patient ownership boundaries;
+- Auth/RLS;
 - Admin RBAC;
-- service-role-only payment mutation functions;
-- DE / FR / EN foundations;
-- existing routes and Patient App behavior;
+- service-role-only payment/destructive privacy functions where designed;
+- Patient App and existing routes;
+- DE / FR / EN;
+- Design System;
 - versioned Supabase migrations;
-- synchronized npm lockfile;
+- synchronized lockfile;
 - published Git history;
-- no unreviewed third-party font/provider dependency.
+- P05 privilege hardening;
+- P10 privacy distinctions;
+- P11 domain-specific retention principle;
+- P12 own-request/export boundaries;
+- P13 server erasure orchestration, blockers and commerce identity detachment;
+- all legal texts as drafts until explicit approval.
 
 ## 10. MUST NOT BREAK
 
 No future phase may:
 
-- let a RED clinical result proceed automatically to a programme recommendation/start;
-- let the browser mark an order paid;
-- let the browser manufacture entitlement;
-- let a patient read another patient's protected data;
-- let an ordinary user self-assign Admin privileges;
-- expose service-role/backend secrets to the browser;
-- reintroduce permissive function EXECUTE defaults unintentionally;
-- weaken RLS simply to remove advisor warnings;
-- accept untrusted Stripe redirect destinations;
-- introduce an external font/provider silently;
-- silently treat technical implementation as legal/clinical/commercial approval.
+- let RED automatically proceed to programme recommendation/start;
+- let browser state create paid status or entitlement;
+- allow cross-user protected-data access;
+- let ordinary users self-assign Admin;
+- expose `service_role` or backend secrets to browser code;
+- weaken RLS or RPC privileges merely to silence warnings;
+- reintroduce broad function EXECUTE defaults;
+- accept untrusted Stripe redirects;
+- persist detailed health/safety answers without an explicitly approved architecture;
+- invent legal bases, Article 9 conditions or retention periods;
+- automatically purge commerce records before validated legal/tax mapping;
+- treat sign-out, soft delete or frontend-only deletion as GDPR erasure;
+- expose destructive privacy RPCs directly to browser-authenticated users;
+- automatically erase accounts with active Admin/pending-order/active-payment blockers;
+- claim legal, clinical or commercial approval from technical implementation;
+- claim P13 automatic therapeutic-data deletion is production-ready before P14-D02 is resolved.
 
 ## 11. Release decision
 
-**Technical foundations through P08: substantially implemented, audited and reconciled for the validated scope.**
+**Technical foundations through P13 are materially implemented for their validated scopes.**
+
+**P14 decisions are validated. P15 reconciles legal drafts with the real technical state but does not legally approve them.**
 
 **Commercial/clinical production release: STOP.**
 
-The remaining work should resolve the real launch gates rather than repeat completed P01–P08 work.
+Recommended next launch-gate work should resolve actual blockers rather than repeat completed phases. Priority candidates include:
 
-Recommended next order:
+1. legal/operator input and professional legal review, including P14-D02 and retention mapping;
+2. clinical programme/safety-content review;
+3. scoped dependency security audit;
+4. Stripe production E2E gate when commercial activation is deliberately approached;
+5. final CSP/provider inventory and performance validation;
+6. final Supabase Pro leaked-password step;
+7. deliberate Source of Truth reconciliation after the current phase sequence.
 
-1. complete the privacy/data-processing inventory and health-data governance for the actual live flows;
-2. verify any remaining owner/default-ACL exposure for future Supabase function creation as needed;
-3. supply and legally review operator/legal information;
-4. conduct structured clinical review and governance of programmes/exercises/safety wording;
-5. verify Stripe production configuration and execute a controlled E2E payment test only when legal/commercial activation is approved;
-6. publish only clinically approved programme content;
-7. produce/replace final exercise media when the video-production workflow is approved;
-8. at final preproduction, upgrade Supabase to Pro, enable Leaked Password Protection and rerun Security Advisor.
+## 12. P15 non-regression statement
 
-## 12. Phase reconciliation results
+P15 must not modify:
 
-### P06
+- Supabase schema/RLS/functions;
+- Stripe/payment authority;
+- pricing logic;
+- entitlement/enrollment logic;
+- Patient progress logic;
+- Program Finder RED behavior;
+- checkout safety logic;
+- Admin RBAC;
+- clinical programme content.
 
-Documentation-only reconciliation of the preproduction gate with P01–P05.
-
-### P07
-
-Auth security audit completed. No code/database mutation required. Leaked Password Protection is deliberately deferred to final preproduction because the current Supabase organization is on Free and the native feature requires Pro or above.
-
-### P08
-
-Documentation-only closure of an obsolete external-font privacy blocker after verifying the current repository does not intentionally load Google Fonts or reference the previously documented Nunito / Playfair remote-font identity.
-
-P06–P08 do **not**:
-
-- authorize a commercial or clinical launch;
-- weaken clinical safety;
-- weaken Auth/RLS/RBAC;
-- change Stripe payment authority;
-- publish clinical content.
+P15 changes are limited to legal-document factual reconciliation, legal-document draft metadata, legal tests and this preproduction gate.

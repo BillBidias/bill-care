@@ -176,10 +176,18 @@ describe("legal routes", () => {
     expect(screen.getByText("Enrollment et progression thérapeutique")).toBeInTheDocument();
   });
 
-  it("does not introduce checkout or payment", () => {
+  it("reconciles legal drafts with implemented checkout without activating commerce", () => {
     renderRoute("/terms");
-    expect(screen.getByTestId("terms-payment-placeholder").textContent).toMatch(/NON ENCORE ACTIF/);
+    expect(screen.getByTestId("terms-payment-status").textContent).toMatch(/Stripe Checkout est techniquement intégré/);
+    expect(screen.getByText(/activation commerciale reste interdite/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /stripe|paypal|klarna|payer|checkout/i })).toBeNull();
+  });
+
+  it("reconciles withdrawal and medical health-data statements", () => {
+    renderRoute("/withdrawal");
+    expect(screen.getByTestId("withdrawal-checkout-status").textContent).toMatch(/session Stripe Checkout/);
+    renderRoute("/medical-disclaimer");
+    expect(screen.getByTestId("medical-health-data-reconciled").textContent).toMatch(/informations concernant votre santé/);
   });
 });
 
