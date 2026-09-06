@@ -195,7 +195,7 @@ describe("/account", () => {
     await user.click(screen.getByRole("button", { name: /Supprimer définitivement mon compte/i }));
     expect(await screen.findByRole("alert")).toHaveTextContent(/vérification manuelle/i);
     expect(mocks.signOut).not.toHaveBeenCalled();
-    expect(screen.getByRole("heading", { name: /Mon compte/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /^Mon compte$/i })).toBeInTheDocument();
   });
 
   it("shows success then navigates to / after a successful profile update", async () => {
