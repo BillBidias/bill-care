@@ -2,14 +2,14 @@
 
 Status: **STOP — not production-ready for commercial/clinical release**
 
-This gate records the verified state of Dein Digital Physio after P01–P05. It does not publish clinical content and does not authorize commercial/clinical release.
+This gate records the verified state of Dein Digital Physio through P08. It does not publish clinical content and does not authorize commercial/clinical release.
 
 Reference state:
 
 - Source of Truth: **v1.3 MASTER**
 - Repository: `BillBidias/bill-care`
 - Reference branch: `main`
-- Reference commit after P05: `036af2426bd5770bab82bd2db6f54e0897cc9833`
+- Reference commit after P06: `39191b3eb99dcb7a08cab4d0f7661c34975bd605`
 
 Status vocabulary used below:
 
@@ -50,7 +50,7 @@ Current verified foundation:
 
 ### P03 — Stripe checkout redirect security — DONE / PASS
 
-Stripe browser redirects are now restricted to the canonical Checkout host boundary:
+Stripe browser redirects are restricted to the canonical Checkout host boundary:
 
 - HTTPS required;
 - exact hostname `checkout.stripe.com` required;
@@ -62,7 +62,7 @@ P03 validation included 14 test files and 117 passing tests, plus a successful b
 
 ### P04 — authenticated SECURITY DEFINER RPC audit — DONE / PASS
 
-The final manual audit previously listed as an open technical item has been completed.
+The manual audit previously listed as an open technical item has been completed.
 
 Verified during P04:
 
@@ -94,18 +94,77 @@ Key effects:
 
 Negative authorization checks confirmed that an ordinary authenticated user did not gain Admin access and could not invoke Stripe server-only mutation RPCs.
 
+### P06 — Preproduction gate reconciliation — DONE / PASS
+
+P06 reconciled this document with the validated P01–P05 implementation state.
+
+It was documentation-only and changed no frontend, backend, Supabase, Stripe, package or clinical-content behavior.
+
+### P07 — Supabase Auth security validation — AUDIT PASS / DEFERRED FINAL STEP
+
+P07 verified the active hosted backend `bill-care-dev` and the current application Auth foundation.
+
+Verified findings:
+
+- Supabase Security Advisor still reports `Leaked Password Protection Disabled`;
+- the Supabase organization is currently on the Free plan;
+- current Supabase documentation states leaked-password protection is available on Pro and above;
+- application registration requires a minimum password length of 8 characters;
+- Auth access is centralized through the existing Supabase Auth provider;
+- browser code uses public/publishable Supabase configuration only and does not reference `service_role`;
+- login return paths are restricted to known internal application routes;
+- Admin UX checks server-verified Admin access and does not replace backend RBAC/RLS authorization;
+- audited application policies/functions did not rely on user-editable `raw_user_meta_data`, deprecated `auth.role()`, or `auth.jwt()` authorization shortcuts.
+
+No GitHub or Supabase mutation was required for P07.
+
+Owner decision:
+
+**Leaked Password Protection is DEFERRED TO FINAL PREPRODUCTION.**
+
+Final required sequence:
+
+1. upgrade the Supabase organization to Pro;
+2. enable Leaked Password Protection on `bill-care-dev`;
+3. rerun the Supabase Security Advisor;
+4. close the item only after the `auth_leaked_password_protection` warning is confirmed absent.
+
+This deferred item does not block current development but remains mandatory before final production readiness.
+
+### P08 — External font privacy gate closure — DONE / PASS
+
+The previous external Google Fonts privacy blocker was rechecked against the actual repository and found to be obsolete.
+
+Verified current state:
+
+- `index.html` contains no Google Fonts stylesheet or preconnect request;
+- `src/index.css` contains no remote `@import` for fonts;
+- the active font variables use `Inter` with system-font fallbacks;
+- repository search found no `fonts.googleapis.com` reference;
+- repository search found no `fonts.gstatic.com` reference;
+- repository search found no active `Nunito` or `Playfair` reference.
+
+Conclusion:
+
+**The current frontend does not intentionally load Google Fonts from Google.**
+
+Therefore the former requirement to replace/self-host Google Fonts or preserve a Nunito / Playfair Display remote-font identity is no longer a current launch blocker.
+
+Non-regression rule:
+
+Do not introduce a new remote font provider later without a fresh privacy, CSP, performance and consent/provider review.
+
 ### Technical items still OPEN before commercial/clinical release
 
-- **OPEN — Supabase Auth leaked-password protection:** still disabled; enable and verify through the supported Supabase Auth configuration surface before launch where the project plan supports it.
+- **DEFERRED FINAL PREPRODUCTION — Supabase Auth leaked-password protection:** upgrade to Pro, enable the feature and rerun Security Advisor before final production readiness.
 - **FOLLOW-UP — `supabase_admin` default function ACL:** current application functions are `postgres`-owned and covered by P05, but future functions created under another owner must be reviewed explicitly. Do not assume P05 globally hardens every possible future owner.
 - **OPEN — production Stripe verification:** verify the production webhook endpoint/secrets and run an approved end-to-end payment test before commercial activation.
 - **OPEN — load/performance validation:** consider additional indexes only after realistic load testing; do not add every linter-suggested index blindly.
-- **OPEN — external font/privacy decision:** replace/self-host Google Fonts or obtain an explicit legal/privacy decision while preserving the Nunito / Playfair Display identity.
 - **OPEN — Content-Security-Policy:** add CSP only after the final asset/provider inventory is known; do not deploy a speculative policy that breaks required services.
 
 ## 2. Commercial / payment gate — PARTIAL, NOT APPROVED FOR RELEASE
 
-The technical checkout chain is now materially implemented. The previous statement that the cart is only purchase-intent and does not call the trusted checkout flow is obsolete.
+The technical checkout chain is materially implemented.
 
 ### Implemented technical chain — DONE
 
@@ -248,6 +307,8 @@ Therefore:
 - do not add permissive policies merely to silence a linter/advisor warning;
 - every new RPC must receive an explicit exposure/owner/EXECUTE review.
 
+The leaked-password warning is a separate Auth configuration item and remains deferred until final preproduction because the current organization is on the Free plan.
+
 ## 9. MUST PRESERVE
 
 Future work must preserve:
@@ -267,7 +328,8 @@ Future work must preserve:
 - existing routes and Patient App behavior;
 - versioned Supabase migrations;
 - synchronized npm lockfile;
-- published Git history.
+- published Git history;
+- no unreviewed third-party font/provider dependency.
 
 ## 10. MUST NOT BREAK
 
@@ -282,38 +344,46 @@ No future phase may:
 - reintroduce permissive function EXECUTE defaults unintentionally;
 - weaken RLS simply to remove advisor warnings;
 - accept untrusted Stripe redirect destinations;
+- introduce an external font/provider silently;
 - silently treat technical implementation as legal/clinical/commercial approval.
 
 ## 11. Release decision
 
-**Technical foundations through P05: substantially implemented and security-hardened for the validated scope.**
+**Technical foundations through P08: substantially implemented, audited and reconciled for the validated scope.**
 
 **Commercial/clinical production release: STOP.**
 
-The remaining work should resolve the real launch gates rather than repeat completed P01–P05 work.
+The remaining work should resolve the real launch gates rather than repeat completed P01–P08 work.
 
 Recommended next order:
 
-1. enable and verify Supabase leaked-password protection and complete the remaining Auth security validation;
-2. verify any remaining owner/default-ACL exposure for future function creation as needed;
+1. complete the privacy/data-processing inventory and health-data governance for the actual live flows;
+2. verify any remaining owner/default-ACL exposure for future Supabase function creation as needed;
 3. supply and legally review operator/legal information;
-4. complete privacy processing inventory and health-data governance for the actual live flows;
-5. conduct structured clinical review and governance of programmes/exercises/safety wording;
-6. verify Stripe production configuration and execute a controlled E2E payment test only when legal/commercial activation is approved;
-7. publish only clinically approved programme content;
-8. produce/replace final exercise media when the video-production workflow is approved.
+4. conduct structured clinical review and governance of programmes/exercises/safety wording;
+5. verify Stripe production configuration and execute a controlled E2E payment test only when legal/commercial activation is approved;
+6. publish only clinically approved programme content;
+7. produce/replace final exercise media when the video-production workflow is approved;
+8. at final preproduction, upgrade Supabase to Pro, enable Leaked Password Protection and rerun Security Advisor.
 
-## 12. P06 reconciliation result
+## 12. Phase reconciliation results
 
-P06 is documentation-only.
+### P06
 
-Its purpose is to ensure this gate no longer lists already completed P01–P05 work as future tasks while preserving every real legal, privacy, clinical, payment and security blocker.
+Documentation-only reconciliation of the preproduction gate with P01–P05.
 
-P06 does **not**:
+### P07
 
-- change frontend behavior;
-- change backend behavior;
-- change Supabase schema/RLS/functions;
-- change Stripe integration;
-- publish content;
-- authorize a commercial or clinical launch.
+Auth security audit completed. No code/database mutation required. Leaked Password Protection is deliberately deferred to final preproduction because the current Supabase organization is on Free and the native feature requires Pro or above.
+
+### P08
+
+Documentation-only closure of an obsolete external-font privacy blocker after verifying the current repository does not intentionally load Google Fonts or reference the previously documented Nunito / Playfair remote-font identity.
+
+P06–P08 do **not**:
+
+- authorize a commercial or clinical launch;
+- weaken clinical safety;
+- weaken Auth/RLS/RBAC;
+- change Stripe payment authority;
+- publish clinical content.
