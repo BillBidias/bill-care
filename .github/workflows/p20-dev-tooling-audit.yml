@@ -1,4 +1,4 @@
-name: P20 Dev Tooling Dependency Security Audit
+name: P20 Dev Tooling Dependency Security Validation
 
 on:
   push:
@@ -6,8 +6,11 @@ on:
       - p20-dev-tooling-dependency-security-audit
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  audit:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,38 +18,39 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Refresh lockfile
+        run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
       - name: Full audit
         shell: bash
         run: npm audit --json > audit-all.json || true
       - name: Production audit guard
         shell: bash
         run: npm audit --omit=dev --json > audit-prod.json || true
-      - name: Print summaries
+      - name: Print audit summaries
         run: |
           node <<'NODE'
           const fs = require('fs');
           for (const file of ['audit-all.json','audit-prod.json']) {
             const data = JSON.parse(fs.readFileSync(file,'utf8'));
-            console.log(file, JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
+            console.log(`=== ${file} ===`);
+            console.log(JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
+            console.log('packages', Object.keys(data.vulnerabilities ?? {}));
           }
           NODE
-      - name: Show ownership paths
-        run: npm ls @humanfs/node ajv brace-expansion browserslist flatted form-data js-yaml minimatch ws eslint autoprefixer jsdom --all || true
-      - name: Inspect same-major candidates
+      - name: Verify tooling resolutions
+        run: npm ls @humanfs/node ajv brace-expansion browserslist flatted form-data js-yaml minimatch ws eslint @eslint/js autoprefixer jsdom typescript-eslint --all || true
+      - name: Commit validated lockfile
         run: |
-          echo '=== eslint latest 9.x ==='
-          npm view eslint@9 version --json
-          echo '=== eslint 9.39.1 deps ==='
-          npm view eslint@9.39.1 dependencies --json || true
-          echo '=== @eslint/js latest 9.x ==='
-          npm view @eslint/js@9 version --json
-          echo '=== jsdom latest 20.x ==='
-          npm view jsdom@20 version --json
-          echo '=== jsdom 20.0.3 deps ==='
-          npm view jsdom@20.0.3 dependencies --json
-          echo '=== autoprefixer 10.5.5 peer/engines ==='
-          npm view autoprefixer@10.5.5 peerDependencies --json
-          npm view autoprefixer@10.5.5 engines --json
-          echo '=== typescript-eslint latest 8.x peer ==='
-          npm view typescript-eslint@8.69.0 peerDependencies --json
+          if git diff --quiet -- package-lock.json; then
+            echo "No lockfile change to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "P20: persist validated dev tooling lockfile"
+          git push
