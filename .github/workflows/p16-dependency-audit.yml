@@ -15,7 +15,11 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Refresh lockfile for targeted patch updates
+        run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
+      - run: npm test
+      - run: npm run build
       - name: Capture full dependency audit
         shell: bash
         run: npm audit --json > audit-all.json || true
@@ -30,24 +34,12 @@ jobs:
             const data = JSON.parse(fs.readFileSync(file, 'utf8'));
             console.log(`=== ${file} ===`);
             console.log(JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
-            const vulns = data.vulnerabilities ?? {};
-            for (const [name, v] of Object.entries(vulns)) {
-              console.log(JSON.stringify({
-                name,
-                severity: v.severity,
-                direct: v.isDirect,
-                via: Array.isArray(v.via) ? v.via.map(x => typeof x === 'string' ? x : ({source:x.source,name:x.name,severity:x.severity,title:x.title,range:x.range,url:x.url})) : v.via,
-                effects: v.effects,
-                range: v.range,
-                nodes: v.nodes,
-                fixAvailable: v.fixAvailable
-              }, null, 2));
-            }
           }
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: p16-npm-audit
+          name: p16-remediation-output
           path: |
+            package-lock.json
             audit-all.json
             audit-prod.json
