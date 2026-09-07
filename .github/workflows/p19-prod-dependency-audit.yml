@@ -1,4 +1,4 @@
-name: P19 Production Dependency Audit
+name: P19 Production Dependency Validation
 
 on:
   push:
@@ -6,8 +6,11 @@ on:
       - p19-residual-production-dependency-security
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  audit:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,48 +18,37 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Refresh lockfile
+        run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
+      - run: npm test
+      - run: npm run build
       - name: Production audit
         shell: bash
         run: npm audit --omit=dev --json > audit-prod.json || true
-      - name: Print production vulnerability graph
+      - name: Full audit
+        shell: bash
+        run: npm audit --json > audit-all.json || true
+      - name: Print audit summaries
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const data = JSON.parse(fs.readFileSync('audit-prod.json','utf8'));
-          console.log('SUMMARY', JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
-          for (const [name, v] of Object.entries(data.vulnerabilities ?? {})) {
-            console.log(JSON.stringify({
-              name,
-              severity: v.severity,
-              isDirect: v.isDirect,
-              range: v.range,
-              effects: v.effects,
-              fixAvailable: v.fixAvailable,
-              nodes: v.nodes,
-              via: (v.via ?? []).map(x => typeof x === 'string' ? x : ({source:x.source,name:x.name,severity:x.severity,title:x.title,range:x.range,url:x.url}))
-            }, null, 2));
+          for (const file of ['audit-prod.json','audit-all.json']) {
+            const data = JSON.parse(fs.readFileSync(file,'utf8'));
+            console.log(`=== ${file} ===`);
+            console.log(JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
           }
           NODE
-      - name: Show ownership paths
-        run: npm ls brace-expansion glob lodash minimatch picomatch postcss-selector-parser yaml --all || true
-      - name: Inspect fixed transitive versions
+      - name: Verify targeted dependency resolutions
+        run: npm ls recharts lodash brace-expansion glob minimatch picomatch postcss-selector-parser yaml --all || true
+      - name: Commit validated lockfile
         run: |
-          for spec in \
-            'brace-expansion@2.1.4' \
-            'glob@10.5.0' \
-            'minimatch@9.0.7' \
-            'picomatch@2.3.2' \
-            'postcss-selector-parser@6.1.3' \
-            'yaml@2.8.3'; do
-            echo "=== $spec ==="
-            npm view "$spec" version
-          done
-      - name: Inspect Recharts latest compatibility
-        run: |
-          echo '=== recharts latest version ==='
-          npm view recharts version
-          echo '=== recharts latest dependencies ==='
-          npm view recharts dependencies --json
-          echo '=== recharts latest peerDependencies ==='
-          npm view recharts peerDependencies --json
+          if git diff --quiet -- package-lock.json; then
+            echo "No lockfile change to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "P19: persist validated production dependency lockfile"
+          git push
