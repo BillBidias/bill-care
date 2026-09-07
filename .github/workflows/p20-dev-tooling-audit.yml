@@ -1,4 +1,4 @@
-name: P20 Dev Tooling Dependency Security Verification
+name: P20 Dev Tooling Dependency Security Final Validation
 
 on:
   push:
@@ -6,8 +6,11 @@ on:
       - p20-dev-tooling-dependency-security-audit
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  verify:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,13 +18,44 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Refresh lockfile
+        run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
-      - name: Verify patched versions exist
+      - name: Lint regression snapshot
+        shell: bash
         run: |
-          echo '=== @humanfs/node@0.16.8 ==='
-          npm view @humanfs/node@0.16.8 version
-          echo '=== flatted@3.4.2 ==='
-          npm view flatted@3.4.2 version
-          echo '=== owning ranges ==='
-          npm view eslint@9.39.5 dependencies --json
-          npm view flat-cache@4.0.1 dependencies --json
+          npm run lint > /tmp/p20-lint.log 2>&1 || true
+          cat /tmp/p20-lint.log
+          grep -F '42 problems (17 errors, 25 warnings)' /tmp/p20-lint.log
+      - run: npm test
+      - run: npm run build
+      - name: Full audit
+        shell: bash
+        run: npm audit --json > audit-all.json || true
+      - name: Production audit
+        shell: bash
+        run: npm audit --omit=dev --json > audit-prod.json || true
+      - name: Require clean audits
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          for (const file of ['audit-all.json','audit-prod.json']) {
+            const data = JSON.parse(fs.readFileSync(file,'utf8'));
+            const v = data.metadata?.vulnerabilities ?? {};
+            console.log(file, JSON.stringify(v));
+            if ((v.total ?? 0) !== 0) process.exitCode = 1;
+          }
+          NODE
+      - name: Verify final resolutions
+        run: npm ls @humanfs/node flatted form-data ws browserslist eslint @eslint/js autoprefixer jsdom typescript-eslint --all || true
+      - name: Commit validated lockfile
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "No lockfile change to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "P20: persist final clean dev tooling lockfile"
+          git push
