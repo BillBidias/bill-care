@@ -39,20 +39,17 @@ jobs:
           }
           NODE
       - name: Show ownership paths
-        run: npm ls browserslist brace-expansion js-yaml lodash minimatch picomatch postcss-selector-parser ws yaml form-data ajv @humanfs/node --all || true
-      - name: Inspect safe npm audit fix proposal
-        shell: bash
-        run: npm audit fix --omit=dev --package-lock-only --dry-run --json > audit-fix-dry-run.json || true
-      - name: Print dry-run changes
+        run: npm ls brace-expansion glob lodash minimatch picomatch postcss-selector-parser yaml --all || true
+      - name: Inspect published safe versions
         run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const data = JSON.parse(fs.readFileSync('audit-fix-dry-run.json','utf8'));
-          console.log(JSON.stringify({
-            added: data.added,
-            removed: data.removed,
-            changed: data.changed,
-            audited: data.audited,
-            audit: data.audit
-          }, null, 2));
-          NODE
+          for spec in \
+            'brace-expansion@2.1.4' \
+            'glob@10.5.0' \
+            'lodash@4.17.24' \
+            'minimatch@9.0.7' \
+            'picomatch@2.3.2' \
+            'postcss-selector-parser@6.1.3' \
+            'yaml@2.8.3'; do
+            echo "=== $spec ==="
+            npm view "$spec" version || true
+          done
