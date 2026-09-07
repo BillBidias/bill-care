@@ -6,6 +6,9 @@ on:
       - p16-dependency-security-audit-remediation
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -36,10 +39,14 @@ jobs:
             console.log(JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
           }
           NODE
-      - uses: actions/upload-artifact@v4
-        with:
-          name: p16-remediation-output
-          path: |
-            package-lock.json
-            audit-all.json
-            audit-prod.json
+      - name: Commit validated lockfile
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "No lockfile change to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "P16: persist validated dependency security lockfile"
+          git push
