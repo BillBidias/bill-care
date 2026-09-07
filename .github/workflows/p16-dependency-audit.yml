@@ -1,0 +1,53 @@
+name: P16 Dependency Security Audit
+
+on:
+  push:
+    branches:
+      - p16-dependency-security-audit-remediation
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Capture full dependency audit
+        shell: bash
+        run: npm audit --json > audit-all.json || true
+      - name: Capture production dependency audit
+        shell: bash
+        run: npm audit --omit=dev --json > audit-prod.json || true
+      - name: Print audit summary
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          for (const file of ['audit-all.json', 'audit-prod.json']) {
+            const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+            console.log(`=== ${file} ===`);
+            console.log(JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
+            const vulns = data.vulnerabilities ?? {};
+            for (const [name, v] of Object.entries(vulns)) {
+              console.log(JSON.stringify({
+                name,
+                severity: v.severity,
+                direct: v.isDirect,
+                via: Array.isArray(v.via) ? v.via.map(x => typeof x === 'string' ? x : ({source:x.source,name:x.name,severity:x.severity,title:x.title,range:x.range,url:x.url})) : v.via,
+                effects: v.effects,
+                range: v.range,
+                nodes: v.nodes,
+                fixAvailable: v.fixAvailable
+              }, null, 2));
+            }
+          }
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p16-npm-audit
+          path: |
+            audit-all.json
+            audit-prod.json
