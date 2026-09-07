@@ -1,0 +1,42 @@
+name: P19 Production Dependency Audit
+
+on:
+  push:
+    branches:
+      - p19-residual-production-dependency-security
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Production audit
+        shell: bash
+        run: npm audit --omit=dev --json > audit-prod.json || true
+      - name: Print production vulnerability graph
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('audit-prod.json','utf8'));
+          console.log('SUMMARY', JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
+          for (const [name, v] of Object.entries(data.vulnerabilities ?? {})) {
+            console.log(JSON.stringify({
+              name,
+              severity: v.severity,
+              isDirect: v.isDirect,
+              range: v.range,
+              effects: v.effects,
+              fixAvailable: v.fixAvailable,
+              nodes: v.nodes,
+              via: (v.via ?? []).map(x => typeof x === 'string' ? x : ({source:x.source,name:x.name,severity:x.severity,title:x.title,range:x.range,url:x.url}))
+            }, null, 2));
+          }
+          NODE
+      - name: Show ownership paths
+        run: npm ls browserslist brace-expansion js-yaml lodash minimatch picomatch postcss-selector-parser ws yaml form-data ajv @humanfs/node --all || true
