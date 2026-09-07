@@ -40,3 +40,19 @@ jobs:
           NODE
       - name: Show ownership paths
         run: npm ls browserslist brace-expansion js-yaml lodash minimatch picomatch postcss-selector-parser ws yaml form-data ajv @humanfs/node --all || true
+      - name: Inspect safe npm audit fix proposal
+        shell: bash
+        run: npm audit fix --omit=dev --package-lock-only --dry-run --json > audit-fix-dry-run.json || true
+      - name: Print dry-run changes
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('audit-fix-dry-run.json','utf8'));
+          console.log(JSON.stringify({
+            added: data.added,
+            removed: data.removed,
+            changed: data.changed,
+            audited: data.audited,
+            audit: data.audit
+          }, null, 2));
+          NODE
