@@ -44,7 +44,7 @@ jobs:
           console.log('PROD SUMMARY', JSON.stringify(prod.metadata?.vulnerabilities ?? {}, null, 2));
           NODE
       - name: Show ownership paths
-        run: npm ls --all || true
+        run: npm ls @humanfs/node ajv brace-expansion browserslist flatted form-data js-yaml minimatch ws eslint autoprefixer jsdom --all || true
       - name: Audit fix dry run only
         shell: bash
         run: npm audit fix --package-lock-only --dry-run --json > audit-fix-dry-run.json || true
@@ -55,3 +55,16 @@ jobs:
           const data = JSON.parse(fs.readFileSync('audit-fix-dry-run.json','utf8'));
           console.log(JSON.stringify({added:data.added,removed:data.removed,changed:data.changed,audit:data.audit}, null, 2));
           NODE
+      - name: Inspect parent upgrade paths
+        run: |
+          for pkg in eslint @eslint/js autoprefixer jsdom typescript-eslint; do
+            echo "=== $pkg latest ==="
+            npm view "$pkg" version
+          done
+          echo '=== eslint latest deps ==='
+          npm view eslint dependencies --json
+          echo '=== autoprefixer latest deps ==='
+          npm view autoprefixer dependencies --json
+          echo '=== jsdom latest engines/deps ==='
+          npm view jsdom engines --json
+          npm view jsdom dependencies --json
