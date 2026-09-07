@@ -1,4 +1,4 @@
-name: P18 Vite Build-Chain Audit
+name: P18 Vite Build-Chain Validation
 
 on:
   push:
@@ -6,8 +6,11 @@ on:
       - p18-vite-build-chain-security-remediation
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  audit:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,27 +18,37 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Refresh lockfile
+        run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Capture production audit
+        shell: bash
+        run: npm audit --omit=dev --json > audit-prod.json || true
       - name: Capture full audit
         shell: bash
         run: npm audit --json > audit-all.json || true
-      - name: Print detailed vulnerability graph
+      - name: Print audit summaries
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const data = JSON.parse(fs.readFileSync('audit-all.json','utf8'));
-          console.log('SUMMARY', JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
-          for (const [name, v] of Object.entries(data.vulnerabilities ?? {})) {
-            console.log(JSON.stringify({
-              name,
-              severity: v.severity,
-              isDirect: v.isDirect,
-              range: v.range,
-              effects: v.effects,
-              fixAvailable: v.fixAvailable,
-              via: (v.via ?? []).map(x => typeof x === 'string' ? x : ({source:x.source,name:x.name,severity:x.severity,title:x.title,range:x.range,url:x.url}))
-            }, null, 2));
+          for (const file of ['audit-prod.json','audit-all.json']) {
+            const data = JSON.parse(fs.readFileSync(file,'utf8'));
+            console.log(`=== ${file} ===`);
+            console.log(JSON.stringify(data.metadata?.vulnerabilities ?? {}, null, 2));
           }
           NODE
       - name: Show build-chain versions
         run: npm ls vite @vitejs/plugin-react-swc esbuild rollup postcss autoprefixer tailwindcss --all || true
+      - name: Commit validated lockfile
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "No lockfile change to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "P18: persist validated Vite 7 lockfile"
+          git push
