@@ -24,20 +24,37 @@ export interface ExerciseCompletionResult {
   progressPercent: number;
 }
 
+type RpcRow = Record<string, unknown>;
+
+interface ProgressRow {
+  enrollment_id?: unknown;
+  programme_id?: unknown;
+  enrollment_status?: unknown;
+  completed_exercises?: unknown;
+  total_exercises?: unknown;
+  completed_sessions?: unknown;
+  total_sessions?: unknown;
+  progress_percent?: unknown;
+}
+
+interface PrescriptionRow {
+  prescription_id?: unknown;
+}
+
 const getClient = () => {
   const client = getSupabaseClient();
   if (!client) throw new Error("Supabase is not configured.");
   return client;
 };
 
-const firstRow = (data: unknown): any | null =>
-  Array.isArray(data) ? (data[0] ?? null) : (data ?? null);
+const firstRow = (data: unknown): RpcRow | null =>
+  Array.isArray(data) ? (data[0] ?? null) as RpcRow | null : (data as RpcRow | null);
 
 export async function fetchMyProgrammeProgress(): Promise<ProgrammeProgress[]> {
   const { data, error } = await getClient().rpc("get_my_programme_progress");
   if (error) throw new Error(error.message);
 
-  return (Array.isArray(data) ? data : []).map((row: any) => ({
+  return (Array.isArray(data) ? data : []).map((row: ProgressRow) => ({
     enrollmentId: String(row.enrollment_id),
     programmeId: Number(row.programme_id),
     enrollmentStatus: String(row.enrollment_status) as ProgrammeProgress["enrollmentStatus"],
@@ -54,7 +71,7 @@ export async function fetchCompletedExerciseIds(enrollmentId: string): Promise<S
     p_enrollment_id: enrollmentId,
   });
   if (error) throw new Error(error.message);
-  return new Set((Array.isArray(data) ? data : []).map((row: any) => String(row.prescription_id)));
+  return new Set((Array.isArray(data) ? data : []).map((row: PrescriptionRow) => String(row.prescription_id)));
 }
 
 export async function completeProgrammeExercise(

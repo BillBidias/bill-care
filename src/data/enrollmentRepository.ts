@@ -30,6 +30,23 @@ export interface StartProgrammeEnrollmentResult {
   startedAt: string;
 }
 
+interface EnrollmentRow {
+  id?: unknown;
+  user_id?: unknown;
+  programme_id?: unknown;
+  entitlement_id?: unknown;
+  cycle_number?: unknown;
+  status?: unknown;
+  current_phase_id?: unknown;
+  current_session_id?: unknown;
+  enrolled_at?: unknown;
+  started_at?: unknown;
+  paused_at?: unknown;
+  completed_at?: unknown;
+  cancelled_at?: unknown;
+  last_activity_at?: unknown;
+}
+
 const getClient = () => {
   const client = getSupabaseClient();
   if (!client) throw new Error("Supabase is not configured.");
@@ -44,7 +61,7 @@ export async function listOwnProgrammeEnrollments(): Promise<ProgrammeEnrollment
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row: any) => ({
+  return (data ?? []).map((row: EnrollmentRow) => ({
     id: String(row.id),
     userId: String(row.user_id),
     programmeId: Number(row.programme_id),

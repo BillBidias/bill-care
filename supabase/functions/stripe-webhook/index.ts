@@ -53,12 +53,33 @@ async function verifyStripeSignature(rawBody: string, signatureHeader: string, s
   return false;
 }
 
-async function stripeGetSession(sessionId: string, secret: string) {
+async function stripeGetSession(sessionId: string, secret: string): Promise<Record<string, unknown>> {
   const response = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
     headers: { authorization: `Bearer ${secret}` },
   });
   if (!response.ok) throw new Error("stripe_session_retrieval_failed");
-  return response.json();
+  return response.json() as Promise<Record<string, unknown>>;
+}
+
+interface StripeEvent {
+  id?: unknown;
+  type?: unknown;
+  data?: { object?: Record<string, unknown> };
+}
+
+function parseEvent(rawBody: string): StripeEvent {
+  const parsed = JSON.parse(rawBody) as unknown;
+  if (typeof parsed !== "object" || parsed === null) return {};
+  const event = parsed as Record<string, unknown>;
+  const data = event.data;
+  return {
+    id: event.id,
+    type: event.type,
+    data:
+      typeof data === "object" && data !== null
+        ? { object: (data as Record<string, unknown>).object as Record<string, unknown> | undefined }
+        : undefined,
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -78,9 +99,9 @@ Deno.serve(async (req: Request) => {
     return json(400, { error: "invalid_stripe_signature" });
   }
 
-  let event: any;
+  let event: StripeEvent;
   try {
-    event = JSON.parse(rawBody);
+    event = parseEvent(rawBody);
   } catch {
     return json(400, { error: "invalid_json" });
   }
@@ -92,7 +113,7 @@ Deno.serve(async (req: Request) => {
   if (!HANDLED_EVENTS.has(eventType)) return json(200, { received: true, ignored: true });
   if (!sessionId) return json(400, { error: "missing_checkout_session" });
 
-  let session: any;
+  let session: Record<string, unknown>;
   try {
     session = await stripeGetSession(sessionId, stripeSecret);
   } catch {

@@ -27,6 +27,24 @@ export interface PatientHomeProgramme {
   todayAction: PatientHomeAction;
 }
 
+interface PatientHomeRow {
+  programme_id?: unknown;
+  programme_title?: unknown;
+  entitlement_id?: unknown;
+  entitlement_type?: unknown;
+  granted_at?: unknown;
+  content_ready?: unknown;
+  enrollment_id?: unknown;
+  enrollment_status?: unknown;
+  cycle_number?: unknown;
+  current_phase_id?: unknown;
+  current_phase_title?: unknown;
+  current_session_id?: unknown;
+  current_session_title?: unknown;
+  last_activity_at?: unknown;
+  today_action?: unknown;
+}
+
 const getClient = () => {
   const client = getSupabaseClient();
   if (!client) throw new Error("Supabase is not configured.");
@@ -40,7 +58,7 @@ export async function fetchPatientAppHome(language: "fr" | "en" | "de"): Promise
 
   if (error) throw new Error(error.message);
 
-  return (Array.isArray(data) ? data : []).map((row: any) => ({
+  return (Array.isArray(data) ? data : []).map((row: PatientHomeRow) => ({
     programmeId: Number(row.programme_id),
     programmeTitle: String(row.programme_title ?? ""),
     entitlementId: String(row.entitlement_id),

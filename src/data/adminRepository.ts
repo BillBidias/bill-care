@@ -48,14 +48,40 @@ export interface AdminTeamMember {
   assignedCustomerCount: number;
 }
 
+type RpcRow = Record<string, unknown>;
+
+interface AdminCustomerRow {
+  user_id?: unknown;
+  email?: unknown;
+  display_name?: unknown;
+  preferred_language?: unknown;
+  account_created_at?: unknown;
+  last_sign_in_at?: unknown;
+  order_count?: unknown;
+  paid_order_count?: unknown;
+  pending_order_count?: unknown;
+  total_paid_amount?: unknown;
+  paid_currency?: unknown;
+  assigned_admin_ids?: unknown;
+  primary_admin_id?: unknown;
+}
+
+interface AdminTeamRow {
+  admin_user_id?: unknown;
+  email?: unknown;
+  display_name?: unknown;
+  role_keys?: unknown;
+  assigned_customer_count?: unknown;
+}
+
 const getClient = () => {
   const client = getSupabaseClient();
   if (!client) throw new Error("Supabase is not configured.");
   return client;
 };
 
-const firstRow = (data: unknown): any | null =>
-  Array.isArray(data) ? (data[0] ?? null) : (data ?? null);
+const firstRow = (data: unknown): RpcRow | null =>
+  Array.isArray(data) ? (data[0] ?? null) as RpcRow | null : (data as RpcRow | null);
 
 export function hasAdminPermission(access: AdminAccess | null, permission: string): boolean {
   return Boolean(access?.permissionKeys.includes(permission));
@@ -107,7 +133,7 @@ export async function listAdminCustomers(search = "", limit = 100, offset = 0): 
   });
   if (error) throw new Error(error.message);
 
-  return (Array.isArray(data) ? data : []).map((row: any) => ({
+  return (Array.isArray(data) ? data : []).map((row: AdminCustomerRow) => ({
     userId: String(row.user_id),
     email: String(row.email ?? ""),
     displayName: row.display_name == null ? null : String(row.display_name),
@@ -128,7 +154,7 @@ export async function listAdminTeam(): Promise<AdminTeamMember[]> {
   const { data, error } = await getClient().rpc("admin_list_team");
   if (error) throw new Error(error.message);
 
-  return (Array.isArray(data) ? data : []).map((row: any) => ({
+  return (Array.isArray(data) ? data : []).map((row: AdminTeamRow) => ({
     adminUserId: String(row.admin_user_id),
     email: String(row.email ?? ""),
     displayName: row.display_name == null ? null : String(row.display_name),

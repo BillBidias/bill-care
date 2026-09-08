@@ -13,6 +13,16 @@ export interface ProgrammeEntitlement {
   validUntil: string | null;
 }
 
+interface EntitlementRow {
+  id?: unknown;
+  programme_id?: unknown;
+  entitlement_type?: unknown;
+  status?: unknown;
+  source_order_id?: unknown;
+  granted_at?: unknown;
+  valid_until?: unknown;
+}
+
 export async function listOwnEntitlements(): Promise<ProgrammeEntitlement[]> {
   const client = getSupabaseClient();
   if (!client) throw new Error("Supabase is not configured.");
@@ -24,7 +34,7 @@ export async function listOwnEntitlements(): Promise<ProgrammeEntitlement[]> {
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row: any) => ({
+  return (data ?? []).map((row: EntitlementRow) => ({
     id: String(row.id),
     programmeId: Number(row.programme_id),
     entitlementType: row.entitlement_type as EntitlementType,
