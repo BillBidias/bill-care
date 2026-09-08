@@ -97,10 +97,10 @@ export async function fetchDiscoveryProgrammes(): Promise<DiscoveryProgramme[]> 
   return (data ?? []).map((row) => ({
     id: Number(row.id),
     bodyRegions: Array.isArray(row.body_regions)
-      ? row.body_regions.map((item: any) => ({ key: String(item.key), isPrimary: Boolean(item.is_primary) }))
+      ? row.body_regions.map((item: { key?: unknown; is_primary?: unknown }) => ({ key: String(item.key), isPrimary: Boolean(item.is_primary) }))
       : [],
-    goals: Array.isArray(row.goals) ? row.goals.map((item: any) => ({ key: String(item.key) })) : [],
-    contexts: Array.isArray(row.contexts) ? row.contexts.map((item: any) => ({ key: String(item.key) })) : [],
+    goals: Array.isArray(row.goals) ? row.goals.map((item: { key?: unknown }) => ({ key: String(item.key) })) : [],
+    contexts: Array.isArray(row.contexts) ? row.contexts.map((item: { key?: unknown }) => ({ key: String(item.key) })) : [],
   }));
 }
 

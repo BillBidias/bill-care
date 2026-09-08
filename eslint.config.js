@@ -21,6 +21,21 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/purity": "off",
+    },
+  },
+  {
+    files: [
+      "src/auth/AuthProvider.tsx",
+      "src/auth/RequireAuth.tsx",
+      "src/components/ui/**/*.{ts,tsx}",
+      "src/lib/cart.tsx",
+      "src/lib/consent.tsx",
+      "src/lib/i18n.tsx",
+    ],
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   },
 );

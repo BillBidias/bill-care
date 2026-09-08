@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -42,7 +42,7 @@ const PatientSessionPlaceholderPage = () => {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -58,9 +58,9 @@ const PatientSessionPlaceholderPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [enrollmentId, lang]);
 
-  useEffect(() => { void load(); }, [enrollmentId, lang]);
+  useEffect(() => { void load(); }, [load]);
 
   const exercise = useMemo<SessionExercise | null>(
     () => session?.exercises[activeIndex] ?? null,
