@@ -1,0 +1,28 @@
+name: P21 Lint Error Remediation Gate
+
+on:
+  push:
+    branches:
+      - p21-lint-error-remediation-gate
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        shell: bash
+        run: |
+          npm run lint | tee lint.log
+      - run: npm test
+      - run: npm run build
+      - name: Full audit
+        run: npm audit
+      - name: Production audit
+        run: npm audit --omit=dev
