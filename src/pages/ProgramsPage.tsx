@@ -43,22 +43,26 @@ const ProgramsPage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (loading || requestedProgrammeId === null) return;
+    if (loading) return;
+    if (requestedProgrammeId === null) {
+      setOpenProgram(null);
+      return;
+    }
     const programme = catalogue.find((item) => item.id === requestedProgrammeId);
-    if (programme) setOpenProgram(programme);
+    setOpenProgram(programme ?? null);
   }, [catalogue, loading, requestedProgrammeId]);
 
   const closeProgram = () => {
-    setOpenProgram(null);
     if (searchParams.has("program")) {
       const next = new URLSearchParams(searchParams);
       next.delete("program");
       setSearchParams(next, { replace: true });
+      return;
     }
+    setOpenProgram(null);
   };
 
   const openProgrammeDetails = (program: Program) => {
-    setOpenProgram(program);
     const next = new URLSearchParams(searchParams);
     next.set("program", String(program.id));
     setSearchParams(next, { replace: true });
