@@ -18,20 +18,23 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Refresh lockfile after Vite compatibility repair
+      - name: Use current npm 11 resolver
+        run: npm install --global npm@11.6.0
+      - name: Show runtime versions
+        run: node --version && npm --version
+      - name: Refresh lockfile
         run: npm install --package-lock-only --ignore-scripts
       - run: npm ci
-      - name: Lint snapshot
-        shell: bash
-        run: |
-          npm run lint > lint.log 2>&1 || true
-          cat lint.log
+      - name: Lint
+        run: npm run lint
       - run: npm test
       - run: npm run build
       - name: Full audit
         run: npm audit
       - name: Production audit
         run: npm audit --omit=dev
+      - name: Verify key versions
+        run: npm ls vite vitest @vitest/mocker lovable-tagger --all
       - name: Commit validated lockfile
         run: |
           if git diff --quiet -- package-lock.json; then
@@ -41,5 +44,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package-lock.json
-          git commit -m "P21: persist validated Vite compatibility lockfile"
+          git commit -m "P21: persist validated dependency lockfile"
           git push
