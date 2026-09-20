@@ -141,10 +141,14 @@ describe("legal routes", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Impressum" })).toBeInTheDocument();
   });
 
-  it("never invents operator identity data", () => {
+  it("renders the provisional operator identity without exposing internal placeholders", () => {
     renderRoute("/impressum");
-    expect(screen.getAllByText("REQUIRED_INPUT").length).toBeGreaterThan(0);
-    expect(missingLegalFields()).toContain("operatorName");
+    expect(screen.getAllByText("Bidias Thina Bill Hyacinthe").length).toBeGreaterThan(0);
+    expect(screen.getByText("Traubenstraße 16")).toBeInTheDocument();
+    expect(screen.getByText("kontakt@bill-physio.de")).toBeInTheDocument();
+    expect(screen.getByText("0671 97029941")).toBeInTheDocument();
+    expect(screen.queryByText("REQUIRED_INPUT")).not.toBeInTheDocument();
+    expect(missingLegalFields()).not.toContain("operatorName");
     expect(legalConfig.vatId).toBe("REQUIRED_INPUT");
   });
 

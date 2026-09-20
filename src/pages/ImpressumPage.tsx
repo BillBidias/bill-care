@@ -6,16 +6,16 @@ import LegalLayout from "@/components/LegalLayout";
 import { useTr } from "@/lib/i18n";
 import { legalConfig, isMissing, type LegalValue } from "@/legal/legalConfig";
 
-const Field = ({ label, value }: { label: string; value: LegalValue }) => (
-  <p>
-    <span className="font-semibold text-foreground">{label}: </span>
-    {isMissing(value) ? (
-      <span className="text-destructive font-mono text-xs">REQUIRED_INPUT</span>
-    ) : (
-      value
-    )}
-  </p>
-);
+const Field = ({ label, value }: { label: string; value: LegalValue }) => {
+  if (isMissing(value)) return null;
+
+  return (
+    <p>
+      <span className="font-semibold text-foreground">{label}: </span>
+      {value}
+    </p>
+  );
+};
 
 const ImpressumPage = () => {
   const tr = useTr();
@@ -26,9 +26,9 @@ const ImpressumPage = () => {
       docKey="impressum"
       title={tr({ fr: "Mentions légales", en: "Legal notice", de: "Impressum" })}
       intro={tr({
-        fr: "Informations relatives au fournisseur du service. Les champs marqués REQUIRED_INPUT doivent être complétés par l’exploitant avant toute mise en production.",
-        en: "Service provider information. Fields marked REQUIRED_INPUT must be completed by the operator before any production release.",
-        de: "Anbieterkennzeichnung. Mit REQUIRED_INPUT markierte Felder müssen vor einer Veröffentlichung vom Betreiber ergänzt werden.",
+        fr: "Informations relatives au fournisseur du service.",
+        en: "Service provider information.",
+        de: "Anbieterkennzeichnung.",
       })}
       sections={[
         {

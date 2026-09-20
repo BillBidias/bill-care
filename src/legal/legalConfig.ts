@@ -61,35 +61,37 @@ export type LegalConfig = {
 };
 
 /**
- * Only `brandName` is a confirmed product fact. Everything else awaits
- * operator input and is reported as a production blocker.
+ * The operator details below are provisional and sourced from the currently
+ * published Bill Physio imprint. They must be reviewed before production and
+ * can be replaced here without changing the legal-page components.
  */
 export const legalConfig: LegalConfig = {
   brandName: "Dein Digital-PHYSIO",
-  operatorName: REQUIRED_INPUT,
-  legalForm: REQUIRED_INPUT,
-  addressLine1: REQUIRED_INPUT,
+  operatorName: "Bidias Thina Bill Hyacinthe",
+  legalForm: "Einzelunternehmen",
+  addressLine1: "Traubenstraße 16",
   addressLine2: REQUIRED_INPUT,
-  postalCode: REQUIRED_INPUT,
-  city: REQUIRED_INPUT,
-  country: REQUIRED_INPUT,
-  representative: REQUIRED_INPUT,
-  email: REQUIRED_INPUT,
-  phone: REQUIRED_INPUT,
-  registerCourt: REQUIRED_INPUT,
-  registerNumber: REQUIRED_INPUT,
+  postalCode: "55545",
+  city: "Bad Kreuznach",
+  country: "Deutschland",
+  representative: "Bidias Thina Bill Hyacinthe",
+  email: "kontakt@bill-physio.de",
+  phone: "0671 97029941",
+  registerCourt: "Kein Handelsregistereintrag (Einzelunternehmen)",
+  registerNumber: "Nicht zutreffend",
   vatId: REQUIRED_INPUT,
   supervisoryAuthority: REQUIRED_INPUT,
-  professionalTitle: REQUIRED_INPUT,
-  professionalTitleCountry: REQUIRED_INPUT,
+  professionalTitle: "Physiotherapeut",
+  professionalTitleCountry: "Deutschland",
   professionalRegulations: REQUIRED_INPUT,
   professionalRegulationsUrl: REQUIRED_INPUT,
-  professionalChamber: REQUIRED_INPUT,
-  privacyContactEmail: REQUIRED_INPUT,
+  professionalChamber: "Physio Deutschland",
+  privacyContactEmail: "kontakt@bill-physio.de",
   dataProtectionOfficer: REQUIRED_INPUT,
   dataProtectionAuthority: REQUIRED_INPUT,
   hostingProvider: REQUIRED_INPUT,
-  disputeResolution: REQUIRED_INPUT,
+  disputeResolution:
+    "Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.",
 };
 
 /** Every field still awaiting operator/legal input (production blockers). */
